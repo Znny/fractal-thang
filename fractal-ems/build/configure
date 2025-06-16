@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# Default values for build configuration
+PREFIX="/usr/local"      # Installation prefix (not really used for wasm, but standard to have)
+BUILD_DIR="."        # Where to put the output files
+SRC_DIR="../src"           # Source directory
+INCLUDE_DIR="../include"    # Include directory
+EMSCRIPTEN_INCLUDE_DIR="\${EMSDK}/upstream/emscripten/system/include"    # Emscripten system include directory
+
+# Parse command line arguments
+# This allows users to customize the build, e.g.:
+# ./configure --prefix=/custom/path --build-dir=custom_build
+while [ "$1" != "" ]; do
+    case $1 in
+        --prefix=* )    PREFIX="${1#*=}"
+                        ;;
+        --build-dir=* ) BUILD_DIR="${1#*=}"
+                        ;;
+        --src-dir=* )   SRC_DIR="${1#*=}"
+                        ;;
+        --include-dir=* ) INCLUDE_DIR="${1#*=}"
+                        ;;
+        * )             echo "Unknown option: $1"
+                        exit 1
+    esac
+    shift
+done
+
+# Generate the Makefile with Emscripten-specific settings
+cat > "Makefile" << EOF
+# Emscripten build configuration
+CC = emcc          # C compiler
+CXX = em++         # C++ compiler
+
+# Directory structure
+BUILD_DIR = ${BUILD_DIR}
+SRC_DIR = ${SRC_DIR}
+INCLUDE_DIR = ${INCLUDE_DIR}
+EMSCRIPTEN_INCLUDE_DIR = ${EMSCRIPTEN_INCLUDE_DIR}
+
+# Emscripten-specific flags
+# -s WASM=1                    : Generate WebAssembly
+# -s NO_EXIT_RUNTIME=1        : Keep the runtime alive after main() exits
+# -s ENVIRONMENT=web          : Target web browser environment
+# -s ALLOW_MEMORY_GROWTH=1    : Allow memory to grow beyond initial size
+# -s INITIAL_MEMORY=64MB      : Start with 64MB of memory
+# -s MAXIMUM_MEMORY=2GB       : Allow up to 2GB of memory
+# -s EXPORTED_RUNTIME_METHODS : JavaScript methods to expose
+# -s MODULARIZE=1             : Enable module support for bindings
+# -s EXPORT_NAME="Fractal"     : Name of the exported module
+# --emit-tsd                  : Generate TypeScript declaration file
+CFLAGS = -s WASM=1 \
+         -s NO_EXIT_RUNTIME=1 \
+         -s ENVIRONMENT=web \
+         -s ALLOW_MEMORY_GROWTH=1 \
+         -s INITIAL_MEMORY=64MB \
+         -s MAXIMUM_MEMORY=2GB \
+         -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
+         -s MODULARIZE=1 \
+         -s EXPORT_NAME="Fractal" \
+         -I\$(INCLUDE_DIR) \
+         -I\$(EMSCRIPTEN_INCLUDE_DIR) \
+         --bind
+TSDFLAGS = --emit-tsd
+CXXFLAGS = \$(CFLAGS)
+
+# Source files and targets
+SRC = \$(wildcard \$(SRC_DIR)/*.cpp)
+OBJ = \$(SRC:.cpp=.o)
+TARGET = \$(BUILD_DIR)/gen.html
+
+# Build rules
+all: \$(TARGET)            # Default target
+
+# Link object files into final executable
+\$(TARGET): \$(OBJ)
+	\$(CXX) \$(CXXFLAGS) \$(TSDFLAGS) -o \$@ \$^
+
+# Compile source files to object files
+\$(SRC_DIR)/%.o: \$(SRC_DIR)/%.cpp
+	\$(CXX) \$(CXXFLAGS) -c \$< -o \$@
+
+# Clean up build artifacts
+clean:
+	rm -f \$(OBJ) \$(TARGET)
+
+.PHONY: all clean
+EOF
+
+echo "Configuration complete. Makefile has been generated."
