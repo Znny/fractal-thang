@@ -21,7 +21,7 @@ echo "Building project..."
 
 # Copy the output files to the fractal-thang directory  
 echo "Copying output files..."
-cp build/gen.* ../fractal-thang/src/imports/
+cp gen.* ../../fractal-thang/src/imports/
 
 echo "Build complete! Open gen.html in a web browser to see the result."
 
