@@ -1,3 +1,6 @@
+//std includes
+#include <stdio.h>
+
 //emscripten includes
 #include <emscripten/bind.h>
 
@@ -12,5 +15,12 @@ MyStruct GenConstStruct() {
 
 MyStruct GenStruct(int x, int y) {
     return MyStruct(x, y);
+}
+
+int main()
+{
+    printf("Hello, World!\n");
+
+    return 0;
 }
 

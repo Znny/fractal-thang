@@ -34,14 +34,18 @@ CXX = em++         # C++ compiler
 
 # Directory structure
 BUILD_DIR = ${BUILD_DIR}
+OBJ_DIR = \$(BUILD_DIR)/obj
 SRC_DIR = ${SRC_DIR}
 INCLUDE_DIR = ${INCLUDE_DIR}
 EMSCRIPTEN_INCLUDE_DIR = ${EMSCRIPTEN_INCLUDE_DIR}
 
+# Create object directory
+\$(shell mkdir -p \$(OBJ_DIR))
+
 # Emscripten-specific flags
 # -s WASM=1                    : Generate WebAssembly
 # -s NO_EXIT_RUNTIME=1        : Keep the runtime alive after main() exits
-# -s ENVIRONMENT=web          : Target web browser environment
+# -s ENVIRONMENT=node         : Target Node.js environment
 # -s ALLOW_MEMORY_GROWTH=1    : Allow memory to grow beyond initial size
 # -s INITIAL_MEMORY=64MB      : Start with 64MB of memory
 # -s MAXIMUM_MEMORY=2GB       : Allow up to 2GB of memory
@@ -61,28 +65,31 @@ CFLAGS = -s WASM=1 \
          -I\$(INCLUDE_DIR) \
          -I\$(EMSCRIPTEN_INCLUDE_DIR) \
          --bind
-TSDFLAGS = --emit-tsd
+TSDFLAGS = --emit-tsd gen.d.ts
 CXXFLAGS = \$(CFLAGS)
 
 # Source files and targets
 SRC = \$(wildcard \$(SRC_DIR)/*.cpp)
-OBJ = \$(SRC:.cpp=.o)
-TARGET = \$(BUILD_DIR)/gen.html
+OBJ = \$(patsubst \$(SRC_DIR)/%.cpp,\$(OBJ_DIR)/%.o,\$(SRC))
+TARGET = \$(BUILD_DIR)/gen.js
 
 # Build rules
 all: \$(TARGET)            # Default target
 
 # Link object files into final executable
 \$(TARGET): \$(OBJ)
-	\$(CXX) \$(CXXFLAGS) \$(TSDFLAGS) -o \$@ \$^
+	@echo "Linking object files into \$(TARGET)..."
+	\$(CXX) \$(CXXFLAGS) -o \$(TARGET) \$^ \$(TSDFLAGS)
 
 # Compile source files to object files
-\$(SRC_DIR)/%.o: \$(SRC_DIR)/%.cpp
+\$(OBJ_DIR)/%.o: \$(SRC_DIR)/%.cpp
+	@echo "Compiling \$< to \$@..."
 	\$(CXX) \$(CXXFLAGS) -c \$< -o \$@
 
 # Clean up build artifacts
 clean:
-	rm -f \$(OBJ) \$(TARGET)
+	rm -f \$(OBJ) \$(TARGET) \$(BUILD_DIR)/*.wasm
+	rm -rf \$(OBJ_DIR)
 
 .PHONY: all clean
 EOF
