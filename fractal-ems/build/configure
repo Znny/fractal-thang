@@ -59,7 +59,7 @@ CFLAGS = -s WASM=1 \
          -s ALLOW_MEMORY_GROWTH=1 \
          -s INITIAL_MEMORY=64MB \
          -s MAXIMUM_MEMORY=2GB \
-         -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
+         -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','callMain'] \
          -s MODULARIZE=1 \
          -s EXPORT_NAME="Fractal" \
          -I\$(INCLUDE_DIR) \
