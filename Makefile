@@ -34,19 +34,23 @@ NATIVE_TARGET = $(BUILD_DIR)/fractal
 # Web build configuration
 WEB_CC = emcc
 WEB_CXX = em++
-WEB_CFLAGS = -s WASM=1 \
-             -s MODULARIZE=1 \
-             -s NO_EXIT_RUNTIME=1 \
-             -s ENVIRONMENT=web \
-             -s ALLOW_MEMORY_GROWTH=1 \
-             -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
-             -s EXPORT_NAME="Fractal" \
-			 --no-entry
 
-WEB_INCLUDE_FLAGS = -I$(INCLUDE_DIR) \
-             -I$(EMSCRIPTEN_INCLUDE_DIR)
+# Compilation flags (for creating object files)
+WEB_CFLAGS = -I$(INCLUDE_DIR) \
+             -I$(EMSCRIPTEN_INCLUDE_DIR) \
+             -Wno-c++20-extensions
 
-WEB_LDFLAGS = -lembind -lstdc++
+# Linker flags (for final linking)
+WEB_LINKER_FLAGS = -s WASM=1 \
+                   -s MODULARIZE=1 \
+                   -s NO_EXIT_RUNTIME=1 \
+                   -s ENVIRONMENT=web \
+                   -s ALLOW_MEMORY_GROWTH=1 \
+                   -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
+                   -s EXPORT_NAME="Fractal" \
+                   --no-entry \
+                   -lembind -lstdc++
+
 WEB_CXXFLAGS = $(WEB_CFLAGS)
 WEB_TSDFLAGS = --emit-tsd main.d.ts
 WEB_TARGET = $(BUILD_DIR)/main.js
@@ -66,7 +70,7 @@ web: $(WEB_TARGET)
 
 $(WEB_TARGET): $(WEB_OBJ)
 	@echo "Linking WebAssembly module..."
-	$(WEB_CXX) $(WEB_CXXFLAGS) -o $(WEB_TARGET) $^ $(WEB_TSDFLAGS) $(WEB_INCLUDE_FLAGS) $(WEB_LDFLAGS)
+	$(WEB_CXX) $(WEB_LINKER_FLAGS) -o $(WEB_TARGET) $^ $(WEB_TSDFLAGS)
 
 # Compile source files to object files for native target
 $(NATIVE_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
