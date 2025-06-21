@@ -20,6 +20,7 @@ ALL_SRC = $(wildcard $(SRC_DIR)/*.cpp)
 NATIVE_SRC = $(filter-out $(SRC_DIR)/embinding.cpp,$(ALL_SRC))
 WEB_SRC = $(ALL_SRC)
 
+# Object files
 NATIVE_OBJ = $(patsubst $(SRC_DIR)/%.cpp,$(NATIVE_OBJ_DIR)/%.o,$(NATIVE_SRC))
 WEB_OBJ = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.o,$(WEB_SRC))
 
@@ -39,7 +40,8 @@ WEB_CFLAGS = -s WASM=1 \
              -s ENVIRONMENT=web \
              -s ALLOW_MEMORY_GROWTH=1 \
              -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
-             -s EXPORT_NAME="Fractal"
+             -s EXPORT_NAME="Fractal" \
+			 --no-entry
 
 WEB_INCLUDE_FLAGS = -I$(INCLUDE_DIR) \
              -I$(EMSCRIPTEN_INCLUDE_DIR)

@@ -24,6 +24,6 @@ std::string getMessage(int x) {
 }
 
 int main(int argc, char** argv) {
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << "Hello, World, from main.cpp, hot reloading live" << std::endl;
     return 0;
 }
