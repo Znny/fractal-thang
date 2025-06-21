@@ -17,6 +17,8 @@ EMSCRIPTEN_BINDINGS(my_module) {
     //Functions
     emscripten::function("GenConstStruct", &GenConstStruct);
     emscripten::function("GenStruct", &GenStruct);
+    emscripten::function("getHelloWorld", &getHelloWorld);
+    emscripten::function("getMessage", &getMessage);
 }
 
 
