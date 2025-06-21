@@ -38,7 +38,7 @@ if [ "$TARGET" = "web" ]; then
     
     # Copy the output files to the fractal-web public/wasm directory  
     echo "Copying output files to fractal-web/public/wasm/..."
-    cp fractal-core/build/gen.* fractal-web/public/wasm/
+    cp fractal-core/build/main.* fractal-web/public/wasm/
     
     echo "Web build complete! Output files copied to fractal-web/public/wasm/"
 else

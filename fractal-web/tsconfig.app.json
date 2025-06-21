@@ -23,5 +23,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "public/gen.js"]
+  "include": ["src", "public/main.js"]
 }

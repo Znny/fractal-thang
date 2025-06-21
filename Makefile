@@ -46,8 +46,8 @@ WEB_INCLUDE_FLAGS = -I$(INCLUDE_DIR) \
 
 WEB_LDFLAGS = -lembind -lstdc++
 WEB_CXXFLAGS = $(WEB_CFLAGS)
-WEB_TSDFLAGS = --emit-tsd gen.d.ts
-WEB_TARGET = $(BUILD_DIR)/gen.js
+WEB_TSDFLAGS = --emit-tsd main.d.ts
+WEB_TARGET = $(BUILD_DIR)/main.js
 
 # Default target
 all: native
