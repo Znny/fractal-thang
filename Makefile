@@ -38,13 +38,13 @@ WEB_CFLAGS = -s WASM=1 \
              -s NO_EXIT_RUNTIME=1 \
              -s ENVIRONMENT=web \
              -s ALLOW_MEMORY_GROWTH=1 \
-             -s INITIAL_MEMORY=64MB \
-             -s MAXIMUM_MEMORY=2GB \
              -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
-             -s EXPORT_NAME="Fractal" \
-             -I$(INCLUDE_DIR) \
-             -I$(EMSCRIPTEN_INCLUDE_DIR) \
-             -lembind -lstdc++
+             -s EXPORT_NAME="Fractal"
+
+WEB_INCLUDE_FLAGS = -I$(INCLUDE_DIR) \
+             -I$(EMSCRIPTEN_INCLUDE_DIR)
+
+WEB_LDFLAGS = -lembind -lstdc++
 WEB_CXXFLAGS = $(WEB_CFLAGS)
 WEB_TSDFLAGS = --emit-tsd gen.d.ts
 WEB_TARGET = $(BUILD_DIR)/gen.js
@@ -64,7 +64,7 @@ web: $(WEB_TARGET)
 
 $(WEB_TARGET): $(WEB_OBJ)
 	@echo "Linking WebAssembly module..."
-	$(WEB_CXX) $(WEB_CXXFLAGS) -o $(WEB_TARGET) $^ $(WEB_TSDFLAGS)
+	$(WEB_CXX) $(WEB_CXXFLAGS) -o $(WEB_TARGET) $^ $(WEB_TSDFLAGS) $(WEB_INCLUDE_FLAGS) $(WEB_LDFLAGS)
 
 # Compile source files to object files for native target
 $(NATIVE_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
