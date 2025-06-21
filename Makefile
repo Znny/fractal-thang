@@ -24,10 +24,18 @@ WEB_SRC = $(ALL_SRC)
 NATIVE_OBJ = $(patsubst $(SRC_DIR)/%.cpp,$(NATIVE_OBJ_DIR)/%.o,$(NATIVE_SRC))
 WEB_OBJ = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.o,$(WEB_SRC))
 
+# Dependency files
+NATIVE_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(NATIVE_OBJ_DIR)/%.d,$(NATIVE_SRC))
+WEB_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.d,$(WEB_SRC))
+
+# Include dependency files
+-include $(NATIVE_DEPS)
+-include $(WEB_DEPS)
+
 # Native build configuration
 NATIVE_CC = gcc
 NATIVE_CXX = g++
-NATIVE_CFLAGS = -Wall -Wextra -O2 -I$(INCLUDE_DIR)
+NATIVE_CFLAGS = -Wall -Wextra -O2 -I$(INCLUDE_DIR) -MMD -MP
 NATIVE_CXXFLAGS = $(NATIVE_CFLAGS) -std=c++17
 NATIVE_TARGET = $(BUILD_DIR)/fractal
 
@@ -38,7 +46,8 @@ WEB_CXX = em++
 # Compilation flags (for creating object files)
 WEB_CFLAGS = -I$(INCLUDE_DIR) \
              -I$(EMSCRIPTEN_INCLUDE_DIR) \
-             -Wno-c++20-extensions
+             -Wno-c++20-extensions \
+             -MMD -MP
 
 # Linker flags (for final linking)
 WEB_LINKER_FLAGS = -s WASM=1 \
@@ -84,7 +93,10 @@ $(WEB_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 # Clean up build artifacts
 clean:
-	rm -f $(NATIVE_OBJ) $(WEB_OBJ) $(NATIVE_TARGET) $(WEB_TARGET) $(BUILD_DIR)/*.wasm
+	rm -f $(NATIVE_OBJ) $(WEB_OBJ) $(NATIVE_DEPS) $(WEB_DEPS) $(NATIVE_TARGET) $(WEB_TARGET) $(BUILD_DIR)/*.wasm
 	rm -rf $(NATIVE_OBJ_DIR) $(WEB_OBJ_DIR)
+
+# Preserve dependency files
+.PRECIOUS: $(NATIVE_DEPS) $(WEB_DEPS)
 
 .PHONY: all native web clean

@@ -3,14 +3,17 @@ set -e  # Exit on error
 
 # Default target
 TARGET="web"
+CLEAN=false
 
 # Parse command line arguments
 while [ "$1" != "" ]; do
     case $1 in
         --target=* )    TARGET="${1#*=}"
                         ;;
+        --clean )       CLEAN=true
+                        ;;
         * )             echo "Unknown option: $1"
-                        echo "Usage: ./build.sh [--target=web|native]"
+                        echo "Usage: ./build.sh [--target=web|native] [--clean]"
                         exit 1
     esac
     shift
@@ -28,8 +31,10 @@ cd "$SCRIPT_DIR"
 
 echo "Building for target: $TARGET"
 
-# Clean any existing build artifacts
-make clean 2>/dev/null || true
+# Only clean if explicitly requested
+if [ "$CLEAN" = true ]; then
+    make clean 2>/dev/null || true
+fi
 
 if [ "$TARGET" = "web" ]; then
     # Build for web using emscripten
