@@ -47,7 +47,12 @@ if [ "$TARGET" = "web" ]; then
 
     # Copy the output files to the fractal-web src/cpp directory
     mkdir -p fractal-web/src/cpp
-    echo "export default Fractal;" >> fractal-core/build/main.js
+    
+    # Check if the last two lines already contain "export default Fractal;" and add it if not
+    if ! tail -n 2 fractal-core/build/main.js | grep -q "export default Fractal;"; then
+        echo "export default Fractal;" >> fractal-core/build/main.js
+    fi
+    
     cp fractal-core/build/main.js fractal-web/src/cpp/main.js
     cp fractal-core/build/main.d.ts fractal-web/src/cpp/main.d.ts
     

@@ -3,7 +3,8 @@
 
 #include <string>
 
-//extern const char* HELLO_WORLD;
+// TEMPORARY/GARBAGE CODE - Will be removed when actual fractal development begins
+// This is just placeholder code for testing the build system
 
 struct MyStruct {
     int x;
