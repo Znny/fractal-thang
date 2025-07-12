@@ -1,0 +1,4 @@
+-Ifractal-core/include
+-I../emsdk/upstream/emscripten/cache/sysroot/include
+-I.
+-D__EMSCRIPTEN__

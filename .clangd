@@ -1,0 +1,8 @@
+CompileFlags:
+    Add: [
+        -Wall
+        -Iinclude
+        -Ifractal-core/include
+    ]
+    Remove: []
+    Compiler: g++
