@@ -36,7 +36,7 @@ WEB_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.d,$(WEB_SRC))
 NATIVE_CC = gcc
 NATIVE_CXX = g++
 NATIVE_CFLAGS = -Wall -Wextra -O2 -I$(INCLUDE_DIR) -MMD -MP
-NATIVE_LINKER_FLAGS = -lglfw -lGL
+NATIVE_LINKER_FLAGS = -lglfw -lGL -lGLEW
 NATIVE_CXXFLAGS = $(NATIVE_CFLAGS) -std=c++17
 NATIVE_TARGET = $(BUILD_DIR)/fractal
 
@@ -60,7 +60,8 @@ WEB_LINKER_FLAGS = -s WASM=1 \
                    -s EXPORT_NAME="Fractal" \
                    -sMAX_WEBGL_VERSION=2 \
                    --no-entry \
-                   -lembind -lstdc++
+                   -lembind -lstdc++ \
+                   --preload-file fractal-core/shaders@/shaders
 
 WEB_CXXFLAGS = $(WEB_CFLAGS)
 WEB_TSDFLAGS = --emit-tsd main.d.ts

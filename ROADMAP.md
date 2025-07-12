@@ -32,7 +32,7 @@ Establish the foundational repository structure, build pipelines, and verify end
 - *Support C++ code hot-reloading*
   - Integrate workflow so changes in C++ trigger automatic rebuild and reload in the browser
 
-- **Validate fresh-build pipelines**
+- *Validate fresh-build pipelines*
   - Verify project builds successfully from a clean clone for both native and web targets
 
 - **Integrate cross-platform testing framework**

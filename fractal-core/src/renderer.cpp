@@ -1,12 +1,26 @@
-#include "renderer.h"
-#include <iostream>
+// renderer.cpp
 
-Renderer::Renderer()
+// C++ standard library
+#include <iostream>
+#include <string>
+#include <memory>
+
+// local headers
+#include "renderer.h"
+#include "ShaderProgram.h"
+
+namespace {
+ShaderProgram* triangleShader = nullptr;
+unsigned int VAO = 0, VBO = 0;
+bool triangleSetup = false;
+}
+
+Renderer::Renderer(int width, int height)
 {
-    width = 800;
-    height = 600;
-    buffer = new int[width * height];
     glInitialized = false;
+
+    this->width = width;
+    this->height = height;
     
     #ifdef __EMSCRIPTEN__
     glContext = 0;
@@ -18,7 +32,6 @@ Renderer::Renderer()
 Renderer::~Renderer()
 {
     DestroyGLContext();
-    delete[] buffer;
 }
 
 bool Renderer::InitGLContext(const std::string& canvasId)
@@ -32,37 +45,31 @@ bool Renderer::InitGLContext(const std::string& canvasId)
     // Initialize WebGL context for Emscripten
     EmscriptenWebGLContextAttributes attrs;
     emscripten_webgl_init_context_attributes(&attrs);
-    //attrs.alpha = 0;
-    //attrs.depth = 1;
-    //attrs.stencil = 0;
-    //attrs.antialias = 1;
-    //attrs.premultipliedAlpha = 0;
-    //attrs.preserveDrawingBuffer = 0;
-    //attrs.powerPreference = EM_WEBGL_POWER_PREFERENCE_DEFAULT;
-    //attrs.failIfMajorPerformanceCaveat = 0;
-    //attrs.enableExtensionsByDefault = 1;
-    //attrs.explicitSwapControl = 0;
-    //attrs.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_DISALLOW;
-    //attrs.renderViaOffscreenBackBuffer = 0;
-    //attrs.majorVersion = 2;
-    //attrs.minorVersion = 0;
+    attrs.alpha = 0;
+    attrs.depth = 1;
+    attrs.stencil = 0;
+    attrs.antialias = 1;
+    attrs.premultipliedAlpha = 0;
+    attrs.preserveDrawingBuffer = 0;
+    attrs.powerPreference = EM_WEBGL_POWER_PREFERENCE_DEFAULT;
+    attrs.failIfMajorPerformanceCaveat = 0;
+    attrs.enableExtensionsByDefault = 1;
+    attrs.explicitSwapControl = 0;
+    attrs.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_DISALLOW;
+    attrs.renderViaOffscreenBackBuffer = 0;
+    attrs.majorVersion = 2;
+    attrs.minorVersion = 0;
     
     glContext = emscripten_webgl_create_context(canvasId.c_str(), &attrs);
     if (glContext == 0) {
         std::cerr << "Failed to create WebGL context" << std::endl;
         return false;
     }
-    else {
-        std::cout << "WebGL context created successfully" << std::endl;
-    }
     
     EMSCRIPTEN_RESULT result = emscripten_webgl_make_context_current(glContext);
     if (result != EMSCRIPTEN_RESULT_SUCCESS) {
         std::cerr << "Failed to make WebGL context current" << std::endl;
         return false;
-    }
-    else {
-        std::cout << "WebGL context made current successfully" << std::endl;
     }
     
     #else
@@ -88,6 +95,12 @@ bool Renderer::InitGLContext(const std::string& canvasId)
     glfwMakeContextCurrent(window);
     
     // Initialize OpenGL extensions (GLEW would be used here in a full implementation)
+    #ifndef __EMSCRIPTEN__
+    if (glewInit() != GLEW_OK) {
+        std::cerr << "Failed to initialize GLEW" << std::endl;
+        return false;
+    }
+    #endif
     #endif
     
     // Set up viewport
@@ -126,10 +139,6 @@ void Renderer::Resize(int newWidth, int newHeight)
     width = newWidth;
     height = newHeight;
     
-    // Reallocate buffer
-    delete[] buffer;
-    buffer = new int[width * height];
-    
     if (glInitialized) {
         glViewport(0, 0, width, height);
     }
@@ -140,16 +149,51 @@ void Renderer::Render()
     if (!glInitialized) {
         return;
     }
-    
+
     // Clear the screen
     Clear();
-    
-    // For now, just clear the buffer
-    for (int i = 0; i < width * height; i++)
-    {
-        buffer[i] = 0;
+
+    // --- Triangle rendering ---
+    if (!triangleSetup) {
+        triangleShader = new ShaderProgram();
+
+        #ifdef __EMSCRIPTEN__
+        triangleShader->AttachShaderFromFile("/shaders/passthrough.vert", GL_VERTEX_SHADER);
+        triangleShader->AttachShaderFromFile("/shaders/passthrough.frag", GL_FRAGMENT_SHADER);
+        triangleShader->Link();
+        #else
+        triangleShader->AttachShaderFromFile("fractal-core/shaders/passthrough.vert", GL_VERTEX_SHADER);
+        triangleShader->AttachShaderFromFile("fractal-core/shaders/passthrough.frag", GL_FRAGMENT_SHADER);
+        triangleShader->Link();
+        #endif
+
+        float vertices[] = {
+            // positions      // texcoords
+            0.0f,  0.5f, 0.0f,  0.5f, 1.0f,
+           -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
+            0.5f, -0.5f, 0.0f,  1.0f, 0.0f
+        };
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        // position
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // texcoord
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        triangleSetup = true;
     }
-    
+
+    triangleShader->Use();
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
+
     #ifndef __EMSCRIPTEN__
     // Swap buffers for native platform
     if (window) {
