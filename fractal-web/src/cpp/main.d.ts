@@ -15,9 +15,9 @@ declare namespace RuntimeExports {
     function cwrap(ident: any, returnType?: string | undefined, argTypes?: any[] | undefined, opts?: any | undefined): (...args: any[]) => any;
 }
 interface WasmModule {
-  _main(_0: number, _1: number): number;
 }
 
+type EmbindString = ArrayBuffer|Uint8Array|Uint8ClampedArray|Int8Array|string;
 export interface ClassHandle {
   isAliasOf(other: ClassHandle): boolean;
   delete(): void;
@@ -27,19 +27,20 @@ export interface ClassHandle {
   [Symbol.dispose](): void;
   clone(): this;
 }
-export interface MyStruct extends ClassHandle {
-  x: number;
-  y: number;
+export interface Renderer extends ClassHandle {
+  initGLContext(_0: EmbindString): boolean;
+  destroyGLContext(): void;
+  resize(_0: number, _1: number): void;
+  render(): void;
+  clear(): void;
+  getWidth(): number;
+  getHeight(): number;
 }
 
 interface EmbindModule {
-  MyStruct: {
-    new(_0: number, _1: number): MyStruct;
+  Renderer: {
+    new(): Renderer;
   };
-  GenConstStruct(): MyStruct;
-  GenStruct(_0: number, _1: number): MyStruct;
-  getHelloWorld(): string;
-  getMessage(_0: number): string;
 }
 
 export type MainModule = WasmModule & typeof RuntimeExports & EmbindModule;

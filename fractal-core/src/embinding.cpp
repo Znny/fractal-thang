@@ -1,24 +1,20 @@
 #include <emscripten/bind.h>
-#include "../include/gen.h"
+#include <emscripten/val.h>
+#include "../include/renderer.h"
 
 EMSCRIPTEN_BINDINGS(my_module) {
-    // Allow raw pointers for string constants
-    //emscripten::allow_raw_pointers();
-    
-    //Constants
-    //emscripten::constant("HELLO_WORLD", emscripten::allow_raw_pointer<const char*>(HELLO_WORLD));
     
     //Classes
-    emscripten::class_<MyStruct>("MyStruct")
-        .constructor<int, int>()
-        .property("x", &MyStruct::x)
-        .property("y", &MyStruct::y);
-        
-    //Functions
-    emscripten::function("GenConstStruct", &GenConstStruct);
-    emscripten::function("GenStruct", &GenStruct);
-    emscripten::function("getHelloWorld", &getHelloWorld);
-    emscripten::function("getMessage", &getMessage);
+    // Renderer class
+    emscripten::class_<Renderer>("Renderer")
+        .constructor<>()
+        .function("initGLContext", &Renderer::InitGLContext)
+        .function("destroyGLContext", &Renderer::DestroyGLContext)
+        .function("resize", &Renderer::Resize)
+        .function("render", &Renderer::Render)
+        .function("clear", &Renderer::Clear)
+        .function("getWidth", &Renderer::GetWidth)
+        .function("getHeight", &Renderer::GetHeight);
 }
 
 
