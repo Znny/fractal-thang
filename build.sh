@@ -31,6 +31,12 @@ cd "$SCRIPT_DIR"
 
 echo "Building for target: $TARGET"
 
+# Ensure TypeScript is available
+if ! command -v tsc &> /dev/null; then
+    echo "TypeScript not found in PATH, using local installation..."
+    export PATH="$PWD/fractal-web/node_modules/.bin:$PATH"
+fi
+
 # Only clean if explicitly requested
 if [ "$CLEAN" = true ]; then
     make clean 2>/dev/null || true

@@ -8,7 +8,7 @@ NATIVE_OBJ_DIR = $(BUILD_DIR)/obj-native
 WEB_OBJ_DIR = $(BUILD_DIR)/obj-web
 SRC_DIR = fractal-core/src
 INCLUDE_DIR = fractal-core/include
-EMSCRIPTEN_INCLUDE_DIR = ${EMSDK}/upstream/emscripten/system/include
+EMSCRIPTEN_INCLUDE_DIR = ${EMSDK}/upstream/emscripten/cache/sysroot/include
 
 # Create object directories
 $(shell mkdir -p $(NATIVE_OBJ_DIR))
@@ -36,6 +36,7 @@ WEB_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.d,$(WEB_SRC))
 NATIVE_CC = gcc
 NATIVE_CXX = g++
 NATIVE_CFLAGS = -Wall -Wextra -O2 -I$(INCLUDE_DIR) -MMD -MP
+NATIVE_LINKER_FLAGS = -lglfw -lGL
 NATIVE_CXXFLAGS = $(NATIVE_CFLAGS) -std=c++17
 NATIVE_TARGET = $(BUILD_DIR)/fractal
 
@@ -57,6 +58,7 @@ WEB_LINKER_FLAGS = -s WASM=1 \
                    -s ALLOW_MEMORY_GROWTH=1 \
                    -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
                    -s EXPORT_NAME="Fractal" \
+                   -sMAX_WEBGL_VERSION=2 \
                    --no-entry \
                    -lembind -lstdc++
 
@@ -72,7 +74,7 @@ native: $(NATIVE_TARGET)
 
 $(NATIVE_TARGET): $(NATIVE_OBJ)
 	@echo "Linking native executable..."
-	$(NATIVE_CXX) $(NATIVE_CXXFLAGS) -o $(NATIVE_TARGET) $^
+	$(NATIVE_CXX) $(NATIVE_CXXFLAGS) -o $(NATIVE_TARGET) $^ $(NATIVE_LINKER_FLAGS)
 
 # Web target
 web: $(WEB_TARGET)
