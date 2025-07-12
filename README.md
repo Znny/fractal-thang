@@ -27,6 +27,15 @@ A project for rendering and visualizing fractals using C++ (compiled to WebAssem
 
 1. Install dependencies:
 ```bash
+#install emsdk(if not already installed)
+cd ../
+git clone https://github.com/emscripten-core/emsdk
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+cd fractal-thang
+
+#install web dependencies
 cd fractal-web
 pnpm install
 ```
