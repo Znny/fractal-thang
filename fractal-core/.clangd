@@ -1,5 +1,0 @@
-CompileFlags:
-  Add: 
-    - "-I/home/ryan/emsdk/upstream/emscripten/system/include"
-    - "-I../include"
-    - "-std=c++17" 
