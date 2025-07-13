@@ -66,3 +66,11 @@ int ShaderProgram::GetAttribLocation(const char* name)
 {
     return glGetAttribLocation(programId, name);
 }
+
+void ShaderProgram::SetUniformMat4(const std::string& name, const glm::mat4& value)
+{
+    GLint location = glGetUniformLocation(programId, name.c_str());
+    if (location != -1) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
+    }
+}
