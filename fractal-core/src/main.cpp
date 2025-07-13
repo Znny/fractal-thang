@@ -5,26 +5,28 @@
 
 // local headers
 #include "renderer.h"
+#include "window.h"
 
 // main function
 #ifndef __EMSCRIPTEN__
 int main(int argc, char** argv) {
-
+    Window window;
     Renderer renderer;
-    if (!renderer.InitGLContext()) {
+    if (!window.Init()) {
         std::cerr << "Failed to initialize renderer" << std::endl;
         return 1;
     }
 
-    int frameCount = 0;
-    while (frameCount < 5000) {
+    while (!window.ShouldClose()) {
+        window.Clear();
+        window.PollEvents();
+
         renderer.Render();
-        frameCount++;
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+
+        window.SwapBuffers();
     }
-    
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-    renderer.DestroyGLContext();
+
+    window.Destroy();
 
     return 0;
 }

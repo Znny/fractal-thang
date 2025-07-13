@@ -1,10 +1,11 @@
 import './App.css'
 import { useState, useEffect, useRef } from 'react'
 import Fractal from './cpp/main'
-import type { MainModule as FractalModule, Renderer } from './cpp/main.d'
+import type { MainModule as FractalModule, Renderer, Window } from './cpp/main.d'
 
 export default function App() {
   const [wasmModule, setWasmModule] = useState<FractalModule>()
+  const [window, setWindow] = useState<Window>()
   const [renderer, setRenderer] = useState<Renderer>()
   const [clickCount, setClickCount] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -17,6 +18,10 @@ export default function App() {
       // Create renderer instance
       const rendererInstance = new instance.Renderer()
       setRenderer(rendererInstance)
+
+      // Create window instance
+      const windowInstance = new instance.Window()
+      setWindow(windowInstance)
     }
     ).catch((err) => {
       console.error('Failed to load WebAssembly module:', err)
@@ -25,16 +30,15 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (renderer && canvasRef.current) {
+    if (window && renderer && canvasRef.current) {
       console.log('Initializing OpenGL context...')
-      const success = renderer.initGLContext('#'+canvasRef.current.id)
+      const success = window.init('#'+canvasRef.current.id)
       if (success) {
         console.log('OpenGL context initialized successfully')
         // Set canvas size
         const canvas = canvasRef.current
-        canvas.width = renderer.getWidth()
-        canvas.height = renderer.getHeight()
-        
+        canvas.width = window.getWidth()
+        canvas.height = window.getHeight()
         // Initial render
         renderer.render()
       } else {
@@ -57,7 +61,7 @@ export default function App() {
     if (renderer && canvasRef.current) {
       const canvas = canvasRef.current
       const rect = canvas.getBoundingClientRect()
-      renderer.resize(rect.width, rect.height)
+      window.Resize(rect.width, rect.height)
       canvas.width = rect.width
       canvas.height = rect.height
     }

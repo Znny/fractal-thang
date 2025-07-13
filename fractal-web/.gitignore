@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+fractal-web/src/cpp/*
+fractal-web/public/*
+fractal-web/package-lock.json

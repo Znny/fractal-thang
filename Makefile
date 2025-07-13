@@ -98,6 +98,8 @@ $(WEB_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 clean:
 	rm -f $(NATIVE_OBJ) $(WEB_OBJ) $(NATIVE_DEPS) $(WEB_DEPS) $(NATIVE_TARGET) $(WEB_TARGET) $(BUILD_DIR)/*.wasm
 	rm -rf $(NATIVE_OBJ_DIR) $(WEB_OBJ_DIR)
+	rm -f fractal-web/src/cpp/*
+	rm -f fractal-web/public/main.*
 
 # Preserve dependency files
 .PRECIOUS: $(NATIVE_DEPS) $(WEB_DEPS)

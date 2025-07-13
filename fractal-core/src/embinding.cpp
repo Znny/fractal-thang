@@ -1,6 +1,7 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include "../include/renderer.h"
+#include "renderer.h"
+#include "window.h"
 
 EMSCRIPTEN_BINDINGS(my_module) {
     
@@ -8,13 +9,17 @@ EMSCRIPTEN_BINDINGS(my_module) {
     // Renderer class
     emscripten::class_<Renderer>("Renderer")
         .constructor<>()
-        .function("initGLContext", &Renderer::InitGLContext)
-        .function("destroyGLContext", &Renderer::DestroyGLContext)
-        .function("resize", &Renderer::Resize)
-        .function("render", &Renderer::Render)
-        .function("clear", &Renderer::Clear)
-        .function("getWidth", &Renderer::GetWidth)
-        .function("getHeight", &Renderer::GetHeight);
+        .function("render", &Renderer::Render);
+
+    emscripten::class_<Window>("Window")
+        .constructor<>()
+        .function("init", &Window::Init)
+        .function("destroy", &Window::Destroy)
+        .function("resize", &Window::Resize)
+        .function("swapBuffers", &Window::SwapBuffers)
+        .function("pollEvents", &Window::PollEvents)
+        .function("getWidth", &Window::GetWidth)
+        .function("getHeight", &Window::GetHeight);
 }
 
 
