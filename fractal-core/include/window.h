@@ -26,6 +26,11 @@ class Window
         int GetWidth() const { return width; }
         int GetHeight() const { return height; }
         
+        // Input methods
+        bool IsKeyPressed(int key) const;
+        bool IsMouseButtonPressed(int button) const;
+        void GetCursorPos(double* xpos, double* ypos) const;
+        
         void Destroy();
 
     private:

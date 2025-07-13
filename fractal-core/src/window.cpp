@@ -171,4 +171,37 @@ void* Window::GetNativeHandle() const
     #else
     return static_cast<void*>(window);
     #endif
+}
+
+bool Window::IsKeyPressed(int key) const
+{
+    #ifdef __EMSCRIPTEN__
+    return false; // TODO: Implement for Emscripten
+    #else
+    return window ? glfwGetKey(window, key) == GLFW_PRESS : false;
+    #endif
+}
+
+bool Window::IsMouseButtonPressed(int button) const
+{
+    #ifdef __EMSCRIPTEN__
+    return false; // TODO: Implement for Emscripten
+    #else
+    return window ? glfwGetMouseButton(window, button) == GLFW_PRESS : false;
+    #endif
+}
+
+void Window::GetCursorPos(double* xpos, double* ypos) const
+{
+    #ifdef __EMSCRIPTEN__
+    *xpos = 0.0;
+    *ypos = 0.0; // TODO: Implement for Emscripten
+    #else
+    if (window) {
+        glfwGetCursorPos(window, xpos, ypos);
+    } else {
+        *xpos = 0.0;
+        *ypos = 0.0;
+    }
+    #endif
 } 
