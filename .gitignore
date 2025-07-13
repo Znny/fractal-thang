@@ -30,3 +30,6 @@ pnpm-debug.log*
 
 # Emscripten specific
 .cache/ 
+
+fractal-web/src/cpp/*
+fractal-web/public/*
