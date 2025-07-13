@@ -9,6 +9,7 @@ WEB_OBJ_DIR = $(BUILD_DIR)/obj-web
 SRC_DIR = fractal-core/src
 INCLUDE_DIR = fractal-core/include
 EMSCRIPTEN_INCLUDE_DIR = ${EMSDK}/upstream/emscripten/cache/sysroot/include
+ASSIMP_INCLUDE_DIR = external/assimp/include
 
 # Create object directories
 $(shell mkdir -p $(NATIVE_OBJ_DIR))
@@ -35,8 +36,8 @@ WEB_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.d,$(WEB_SRC))
 # Native build configuration
 NATIVE_CC = gcc
 NATIVE_CXX = g++
-NATIVE_CFLAGS = -Wall -Wextra -O2 -I$(INCLUDE_DIR) -MMD -MP
-NATIVE_LINKER_FLAGS = -lglfw -lGL -lGLEW
+NATIVE_CFLAGS = -Wall -Wextra -O2 -I$(INCLUDE_DIR) -Iexternal/glm -MMD -MP
+NATIVE_LINKER_FLAGS = -lglfw -lGL -lGLEW -lassimp
 NATIVE_CXXFLAGS = $(NATIVE_CFLAGS) -std=c++17
 NATIVE_TARGET = $(BUILD_DIR)/fractal
 
@@ -46,6 +47,7 @@ WEB_CXX = em++
 
 # Compilation flags (for creating object files)
 WEB_CFLAGS = -I$(INCLUDE_DIR) \
+             -Iexternal/glm \
              -I$(EMSCRIPTEN_INCLUDE_DIR) \
              -Wno-c++20-extensions \
              -MMD -MP
