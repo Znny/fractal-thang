@@ -3,6 +3,8 @@ CompileFlags:
         -Wall
         -Iinclude
         -Ifractal-core/include
+        -Iexternal/glm
+        -Iexternal/assimp/include
     ]
     Remove: []
     Compiler: g++

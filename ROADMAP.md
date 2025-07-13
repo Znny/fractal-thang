@@ -38,7 +38,7 @@ Establish the foundational repository structure, build pipelines, and verify end
 - **Integrate cross-platform testing framework**
   - Add a testing setup that can run tests in native and WASM environments
 
-- **Implement basic rendering example**
+- *Implement basic rendering example*
   - Render a triangle or fullscreen quad using simple vertex and fragment shaders
   - Ensure the example works and appears correctly in both native (OpenGL ES 3.0) and browser (WebGL2) builds
 
