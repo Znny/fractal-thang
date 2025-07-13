@@ -6,7 +6,7 @@
 #include <iostream>
 
 // local headers
-#include "ShaderProgram.h"
+#include "shaderprogram.h"
 
 ShaderProgram::ShaderProgram()
 {

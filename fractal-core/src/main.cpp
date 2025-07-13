@@ -4,14 +4,14 @@
 #include <chrono>
 
 // local headers
-#include "renderer.h"
+#include "trianglerenderer.h"
 #include "window.h"
 
 // main function
 #ifndef __EMSCRIPTEN__
 int main(int argc, char** argv) {
     Window window;
-    Renderer renderer;
+    TriangleRenderer renderer;
     if (!window.Init()) {
         std::cerr << "Failed to initialize renderer" << std::endl;
         return 1;
