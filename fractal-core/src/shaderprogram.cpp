@@ -7,6 +7,7 @@
 
 // local headers
 #include "shaderprogram.h"
+#include "assetutils.h"
 
 ShaderProgram::ShaderProgram()
 {
@@ -25,9 +26,12 @@ void ShaderProgram::Use()
 
 void ShaderProgram::AttachShaderFromFile(const char* path, unsigned int shaderType)
 {
-    std::ifstream file(path);
+    // Resolve the shader path using AssetUtils
+    std::string resolvedPath = AssetUtils::resolveShaderPath(path);
+    
+    std::ifstream file(resolvedPath);
     if (!file.is_open()) {
-        std::cerr << "Failed to open shader file: " << path << std::endl;
+        std::cerr << "Failed to open shader file: " << resolvedPath << std::endl;
         return;
     }
     std::stringstream buffer;

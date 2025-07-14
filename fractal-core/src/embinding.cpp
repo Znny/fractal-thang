@@ -11,6 +11,9 @@
 #include "trianglerenderer.h"
 #include "window.h"
 #include "debug-utils.h"
+#include "mesh.h"
+#include "light.h"
+#include "meshrenderer.h"
 
 EMSCRIPTEN_BINDINGS(my_module) {
     
@@ -88,6 +91,49 @@ EMSCRIPTEN_BINDINGS(my_module) {
 
     // Debug utils
     emscripten::function("printMatrix", &printMatrix);
+    
+    // Light class
+    emscripten::class_<Light>("Light")
+        .constructor<>()
+        .constructor<Light::Type>()
+        .function("setPosition", &Light::setPosition)
+        .function("setDirection", &Light::setDirection)
+        .function("setColor", &Light::setColor)
+        .function("setIntensity", &Light::setIntensity)
+        .function("setRange", &Light::setRange)
+        .function("setType", &Light::setType)
+        .function("getPosition", &Light::getPosition)
+        .function("getDirection", &Light::getDirection)
+        .function("getColor", &Light::getColor)
+        .function("getIntensity", &Light::getIntensity)
+        .function("getRange", &Light::getRange)
+        .function("getType", &Light::getType);
+    
+    // Light type enum
+    emscripten::enum_<Light::Type>("LightType")
+        .value("Point", Light::Type::Point)
+        .value("Directional", Light::Type::Directional)
+        .value("Spot", Light::Type::Spot);
+    
+    // Mesh class
+    emscripten::class_<Mesh>("Mesh")
+        .constructor<const std::string&>()
+        .function("draw", &Mesh::Draw)
+        .function("loadPBRTextures", &Mesh::LoadPBRTextures);
+    
+    // MeshRenderer class
+    emscripten::class_<MeshRenderer>("MeshRenderer")
+        .constructor<>()
+        .function("setMesh", &MeshRenderer::SetMesh)
+        .function("addInstance", &MeshRenderer::AddInstance)
+        .function("clearInstances", &MeshRenderer::ClearInstances)
+        .function("setTransform", &MeshRenderer::SetTransform)
+        .function("setMaterial", &MeshRenderer::SetMaterial)
+        .function("setLights", &MeshRenderer::SetLights)
+        .function("setLight", &MeshRenderer::SetLight)
+        .function("render", &MeshRenderer::Render)
+        .function("loadShaders", &MeshRenderer::LoadShaders)
+        .function("useShader", &MeshRenderer::UseShader);
 }
 
 

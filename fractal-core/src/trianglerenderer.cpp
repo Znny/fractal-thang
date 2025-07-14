@@ -29,15 +29,9 @@ void TriangleRenderer::Render()
     if (!triangleSetup) {
         triangleShader = new ShaderProgram();
 
-        #ifdef __EMSCRIPTEN__
-        triangleShader->AttachShaderFromFile("/shaders/passthrough.vert", GL_VERTEX_SHADER);
-        triangleShader->AttachShaderFromFile("/shaders/passthrough.frag", GL_FRAGMENT_SHADER);
+        triangleShader->AttachShaderFromFile("passthrough.vert", GL_VERTEX_SHADER);
+        triangleShader->AttachShaderFromFile("passthrough.frag", GL_FRAGMENT_SHADER);
         triangleShader->Link();
-        #else
-        triangleShader->AttachShaderFromFile("fractal-core/shaders/passthrough.vert", GL_VERTEX_SHADER);
-        triangleShader->AttachShaderFromFile("fractal-core/shaders/passthrough.frag", GL_FRAGMENT_SHADER);
-        triangleShader->Link();
-        #endif
 
         float vertices[] = {
             // positions        // colors

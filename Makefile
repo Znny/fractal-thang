@@ -36,7 +36,7 @@ WEB_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.d,$(WEB_SRC))
 # Native build configuration
 NATIVE_CC = gcc
 NATIVE_CXX = g++
-NATIVE_CFLAGS = -Wall -Wextra -O2 -I$(INCLUDE_DIR) -Iexternal/glm -MMD -MP
+NATIVE_CFLAGS = -Wall -Wextra -O2 -g -I$(INCLUDE_DIR) -Iexternal/glm -MMD -MP
 NATIVE_LINKER_FLAGS = -lglfw -lGL -lGLEW -lassimp
 NATIVE_CXXFLAGS = $(NATIVE_CFLAGS) -std=c++17
 NATIVE_TARGET = $(BUILD_DIR)/fractal

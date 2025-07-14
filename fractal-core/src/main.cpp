@@ -8,6 +8,8 @@
 #include "trianglerenderer.h"
 #include "window.h"
 #include "camera.h"
+#include "meshrenderer.h"
+#include "mesh.h"
 
 // Forward declarations
 void Tick(float dt, Window& window, Camera& camera, float moveSpeed, float rotateSpeed, 
@@ -17,17 +19,71 @@ void Tick(float dt, Window& window, Camera& camera, float moveSpeed, float rotat
 #ifndef __EMSCRIPTEN__
 int main(int argc, char** argv) {
     Window window;
-    TriangleRenderer renderer;
+    TriangleRenderer trianglerenderer;
     Camera camera;
     
-    if (!window.Init()) {
-        std::cerr << "Failed to initialize renderer" << std::endl;
+    if (!window.Init()) { std::cerr << "Failed to initialize renderer" << std::endl;
         return 1;
     }
+
+    glEnable(GL_DEPTH_TEST);
+    glFrontFace(GL_CW);
+
+    // Initialize MeshRenderer after OpenGL is set up
+    MeshRenderer meshRenderer;
 
     // Set up camera with window dimensions
     camera.setPerspective(45.0f, (float)window.GetWidth() / (float)window.GetHeight(), 0.1f, 100.0f);
     camera.setPosition(glm::vec3(0.0f, 0.0f, 5.0f));
+
+    std::string modelPath = "columns.fbx";
+    if(argc > 1) {
+        if(strcmp(argv[1], "--load") == 0) {
+            // If a custom model is specified, resolve it as an asset path
+            modelPath = argv[2];
+        }
+    }
+
+    // Load test mesh
+    auto mesh = std::make_shared<Mesh>(modelPath);
+    if (!mesh || mesh->vertices.empty()) {
+        std::cerr << "Failed to load " << modelPath << std::endl;
+        return 1;
+    }
+    meshRenderer.SetMesh(mesh);
+    
+    // Load PBR shaders
+    if (!meshRenderer.LoadShaders("pbr.vert", "pbr.frag")) {
+        std::cerr << "Failed to load PBR shaders" << std::endl;
+        return 1;
+    }
+    
+    // Add a mesh instance
+    MeshInstance instance;
+    instance.transform = glm::mat4(1.0f);
+    instance.transform = glm::rotate(instance.transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    meshRenderer.AddInstance(instance);
+    
+
+    // Set up lighting
+    Light light;
+    light.setPosition(glm::vec3(0.0f, 1.0f, 0.0f));
+    light.setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+    light.setIntensity(10.0f);
+    std::vector<Light> lights = {light};
+    light.setPosition(glm::vec3(0.0f, 2.0f, 0.0f));
+    light.setColor(glm::vec3(1.0f, 0.0f, 0.0f));
+    light.setIntensity(10.0f);
+    lights.push_back(light);
+    light.setPosition(glm::vec3(0.0f, 3.0f, 0.0f));
+    light.setColor(glm::vec3(0.0f, 1.0f, 0.0f));
+    light.setIntensity(10.0f);
+    lights.push_back(light);
+    light.setPosition(glm::vec3(0.0f, 4.0f, 0.0f));
+    light.setColor(glm::vec3(0.0f, 0.0f, 1.0f));
+    light.setIntensity(10.0f);
+    lights.push_back(light);
+    meshRenderer.SetLights(lights);
 
     // Camera control variables
     float moveSpeed = 5.0f; // Units per second
@@ -35,6 +91,8 @@ int main(int argc, char** argv) {
     bool rightMouseDown = false;
     double lastMouseX = 0.0, lastMouseY = 0.0;
     bool firstMouse = true;
+
+    trianglerenderer.SetModelMatrix(glm::mat4(1.0f));
 
     // Timing variables - calculate delta time each frame
     float dt = 0.0f;
@@ -52,12 +110,13 @@ int main(int argc, char** argv) {
         // Handle camera controls
         Tick(dt, window, camera, moveSpeed, rotateSpeed, rightMouseDown, lastMouseX, lastMouseY, firstMouse);
 
-        //update the camera
-        renderer.SetModelMatrix(glm::mat4(1.0f));
-        renderer.SetViewMatrix(camera.getViewMatrix());
-        renderer.SetProjectionMatrix(camera.getProjectionMatrix());
+        // Render mesh
+        meshRenderer.Render(camera.getViewMatrix(), camera.getProjectionMatrix(), camera.getPosition());
 
-        renderer.Render();
+        // Render triangle
+        trianglerenderer.SetViewMatrix(camera.getViewMatrix());
+        trianglerenderer.SetProjectionMatrix(camera.getProjectionMatrix());
+        trianglerenderer.Render();
 
         window.SwapBuffers();
     }
