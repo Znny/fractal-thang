@@ -9,6 +9,24 @@ export default function App() {
   const [renderer, setRenderer] = useState<TriangleRenderer>()
   const [camera, setCamera] = useState<Camera>()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  
+  // Camera control state
+  const [keys, setKeys] = useState<Set<string>>(new Set())
+  const [mouseDown, setMouseDown] = useState(false)
+  const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 })
+  const [firstMouse, setFirstMouse] = useState(true)
+  const animationRef = useRef<number | undefined>(undefined)
+  const keysRef = useRef<Set<string>>(new Set())
+
+  // Key code constants for layout-independent input
+  const KEY_CODES = {
+    W: 'KeyW',
+    A: 'KeyA', 
+    S: 'KeyS',
+    D: 'KeyD',
+    Q: 'KeyQ',
+    E: 'KeyE'
+  } as const
 
   useEffect(() => {
     console.log('Loading WebAssembly module')
@@ -44,49 +62,167 @@ export default function App() {
         canvas.width = window.getWidth()
         canvas.height = window.getHeight()
 
-
-        const identityMatrix = new wasmModule.Mat4(1)
-        const vec3Up = new wasmModule.Vec3(0, 1, 0)
-        const vec3Eye = new wasmModule.Vec3(0, 0, 5)
-        const vec3Center = new wasmModule.Vec3(0, 0, 0)
-        const modelMatrix = identityMatrix;
-        const viewMatrix = wasmModule.lookAt(vec3Eye, vec3Center, vec3Up)
-        const projMatrix = wasmModule.perspective(45, window.getWidth() / window.getHeight(), 0.1, 100)
-
         camera.setPerspective(45, window.getWidth() / window.getHeight(), 0.1, 100)
         camera.setPosition(new wasmModule.Vec3(0, 0, 5))
         camera.setRotation(new wasmModule.Vec3(0, 0, 0))
         camera.setScale(new wasmModule.Vec3(1, 1, 1))
 
-        wasmModule.printMatrix(camera.getTransformMatrix())
-        wasmModule.printMatrix(viewMatrix)
-
-        renderer.setModelMatrix(modelMatrix)
-        renderer.setViewMatrix(camera.getViewMatrix())
-        renderer.setProjectionMatrix(camera.getProjectionMatrix())
-
-        //renderer.setModelMatrix(modelMatrix)
-        //renderer.setViewMatrix(viewMatrix)
-        //renderer.setProjectionMatrix(projMatrix)
-
-        // Initial render
-        handleRender()
+        // Start the render loop
+        startRenderLoop()
       } else {
         console.error('Failed to initialize OpenGL context')
       }
     }
-  }, [renderer, wasmModule])
+  }, [renderer, wasmModule, camera])
 
-  const handleRender = () => {
-    if (renderer) {
-      renderer.render()
+  // Input handlers
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      setKeys(prev => {
+        const newKeys = new Set(prev).add(e.code)
+        keysRef.current = newKeys
+        return newKeys
+      })
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      setKeys(prev => {
+        const newKeys = new Set(prev)
+        newKeys.delete(e.code)
+        keysRef.current = newKeys
+        return newKeys
+      })
+    }
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 2) { // Right click
+        setMouseDown(true)
+        setFirstMouse(true)
+      }
+    }
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (e.button === 2) {
+        setMouseDown(false)
+      }
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (mouseDown) {
+        if (firstMouse) {
+          setLastMousePos({ x: e.clientX, y: e.clientY })
+          setFirstMouse(false)
+        } else {
+          const deltaX = lastMousePos.x - e.clientX // Inverted for natural feel
+          const deltaY = lastMousePos.y - e.clientY // Inverted Y for natural feel
+          setLastMousePos({ x: e.clientX, y: e.clientY })
+          
+          // Apply rotation (will be handled in tick function)
+          if (camera) {
+            const rotateSpeed = 0.01
+            camera.rotateYaw(deltaX * rotateSpeed)
+            camera.rotatePitch(deltaY * rotateSpeed)
+          }
+        }
+      }
+    }
+
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault() // Prevent right-click context menu
+    }
+
+    // Add event listeners to browser window
+    globalThis.addEventListener('keydown', handleKeyDown)
+    globalThis.addEventListener('keyup', handleKeyUp)
+    globalThis.addEventListener('mousedown', handleMouseDown)
+    globalThis.addEventListener('mouseup', handleMouseUp)
+    globalThis.addEventListener('mousemove', handleMouseMove)
+    globalThis.addEventListener('contextmenu', handleContextMenu)
+
+    // Cleanup
+    return () => {
+      globalThis.removeEventListener('keydown', handleKeyDown)
+      globalThis.removeEventListener('keyup', handleKeyUp)
+      globalThis.removeEventListener('mousedown', handleMouseDown)
+      globalThis.removeEventListener('mouseup', handleMouseUp)
+      globalThis.removeEventListener('mousemove', handleMouseMove)
+      globalThis.removeEventListener('contextmenu', handleContextMenu)
+    }
+  }, [mouseDown, firstMouse, lastMousePos, camera])
+
+  const tick = (dt: number) => {
+    if (!camera) return
+
+    const moveSpeed = 5.0 // Units per second
+    const distance = moveSpeed * dt
+
+    // Handle keyboard input for movement (layout-independent)
+    if (keysRef.current.has(KEY_CODES.W)) {
+      camera.moveForward(distance)
+    }
+    if (keysRef.current.has(KEY_CODES.S)) {
+      camera.moveForward(-distance)
+    }
+    if (keysRef.current.has(KEY_CODES.A)) {
+      camera.moveRight(-distance)
+    }
+    if (keysRef.current.has(KEY_CODES.D)) {
+      camera.moveRight(distance)
+    }
+    if (keysRef.current.has(KEY_CODES.Q)) {
+      camera.moveUp(-distance)
+    }
+    if (keysRef.current.has(KEY_CODES.E)) {
+      camera.moveUp(distance)
     }
   }
+
+  const startRenderLoop = () => {
+    let lastTime = performance.now()
+
+    const renderLoop = (currentTime: number) => {
+      const dt = (currentTime - lastTime) / 1000.0 // Convert to seconds
+      lastTime = currentTime
+
+      // Update camera controls
+      tick(dt)
+
+      // Render frame
+      if (renderer && camera) {
+        const identityMatrix = new wasmModule!.Mat4(1)
+        renderer.setModelMatrix(identityMatrix)
+        renderer.setViewMatrix(camera.getViewMatrix())
+        renderer.setProjectionMatrix(camera.getProjectionMatrix())
+        renderer.render()
+        
+        // Debug: Log camera position every 60 frames (once per second at 60fps)
+        if (Math.floor(currentTime / 16.67) % 60 === 0) { // 16.67ms = 60fps
+          const pos = camera.getPosition()
+          //console.log('Camera position:', pos)
+        }
+      }
+
+      // Continue loop
+      animationRef.current = requestAnimationFrame(renderLoop)
+    }
+
+    animationRef.current = requestAnimationFrame(renderLoop)
+  }
+
+  // Cleanup animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [])
 
   return (
     <div className="app">
       <h1>Fractal Web</h1>
       <p>WebAssembly module {wasmModule ? 'loaded' : 'loading...'}</p>
+      <p>Controls: WASD to move, QE for up/down, Right-click + drag to rotate</p>
 
       <canvas
         ref={canvasRef}
