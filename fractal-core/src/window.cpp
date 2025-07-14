@@ -10,7 +10,7 @@ Window::Window(int width, int height)
 {
     this->width = width;
     this->height = height;
-    initialized = false;
+    bIsInitialized = false;
     
     #ifdef __EMSCRIPTEN__
     glContext = 0;
@@ -26,7 +26,7 @@ Window::~Window()
 
 bool Window::Init(const std::string& canvasId)
 {
-    if (initialized) {
+    if (bIsInitialized) {
         std::cout << "Window already initialized" << std::endl;
         return true;
     }
@@ -95,7 +95,7 @@ bool Window::Init(const std::string& canvasId)
     glViewport(0, 0, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     
-    initialized = true;
+    bIsInitialized = true;
     std::cout << "Window and OpenGL context initialized successfully" << std::endl;
     return true;
 }
@@ -107,7 +107,7 @@ void Window::Clear()
 
 void Window::Destroy()
 {
-    if (!initialized) {
+    if (!bIsInitialized) {
         return;
     }
     
@@ -124,7 +124,7 @@ void Window::Destroy()
     }
     #endif
     
-    initialized = false;
+    bIsInitialized = false;
 }
 
 void Window::Resize(int newWidth, int newHeight)
@@ -132,7 +132,7 @@ void Window::Resize(int newWidth, int newHeight)
     width = newWidth;
     height = newHeight;
     
-    if (initialized) {
+    if (bIsInitialized) {
         glViewport(0, 0, width, height);
     }
 }

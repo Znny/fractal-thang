@@ -1,8 +1,8 @@
 #include "light.h"
 
-Light::Light(Type type) 
-    : m_type(type), m_position(0.0f, 0.0f, 0.0f), m_direction(0.0f, -1.0f, 0.0f),
-      m_color(1.0f, 1.0f, 1.0f), m_intensity(1.0f), m_range(10.0f) {
+Light::Light(Type type, glm::vec3 position, glm::vec3 direction, glm::vec3 color, float intensity, float range) 
+    : m_type(type), m_position(position), m_direction(direction),
+      m_color(color), m_intensity(intensity), m_range(range) {
 }
 
 void Light::setPosition(const glm::vec3& position) {

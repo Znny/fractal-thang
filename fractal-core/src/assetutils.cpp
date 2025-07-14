@@ -96,25 +96,20 @@ std::string AssetUtils::resolveTexturePath(const std::string& textureName) {
     if (textureName.empty()) {
         return "";
     }
-    std::cout << "Texture name: " << textureName << std::endl;
 
     // If it's already a full path, return as-is
     if (textureName[0] == '/' || textureName.find(':') != std::string::npos) {
         return normalizePath(textureName);
     }
-    std::string cleanTextureName = normalizePath(textureName);
-    std::cout << "Normalized Texture name: " << cleanTextureName << std::endl;
-    
+
     // Remove "texture/" prefix if it exists (common in model relative paths)
+    std::string cleanTextureName = normalizePath(textureName);
     if (cleanTextureName.substr(0, 9) == "textures/") {
         cleanTextureName = cleanTextureName.substr(9);
     }
-    std::cout << "Cleaned texture name: " << cleanTextureName << std::endl;
     
     // Resolve relative to textures directory
     std::string fullPath = getTexturesDir() + "/" + cleanTextureName;
-
-    std::cout << "Resolved texture path: " << fullPath << std::endl;
 
     return normalizePath(fullPath);
 }

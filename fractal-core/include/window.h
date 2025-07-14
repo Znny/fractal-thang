@@ -25,6 +25,8 @@ class Window
 
         int GetWidth() const { return width; }
         int GetHeight() const { return height; }
+        bool IsInitialized() const { return bIsInitialized; }
+        GLFWwindow* GetWindow() const { return window; }
         
         // Input methods
         bool IsKeyPressed(int key) const;
@@ -43,7 +45,7 @@ class Window
         GLFWwindow* window;
         #endif
         
-        bool initialized;
-};
+        bool bIsInitialized = false;
+    };
 
 #endif 
