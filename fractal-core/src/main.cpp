@@ -11,12 +11,20 @@
 #include "camera.h"
 #include "meshrenderer.h"
 #include "mesh.h"
+#include "lightrenderer.h"
 
 // Global variables
 Window* window = nullptr;
 TriangleRenderer* trianglerenderer = nullptr;
 Camera* camera = nullptr;
 MeshRenderer* meshRenderer = nullptr;
+LightRenderer* lightRenderer = nullptr;
+    std::vector<Light> lights = {
+        Light(Light::Type::Point, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 10.0f),
+        Light(Light::Type::Point, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, 10.0f),
+        Light(Light::Type::Point, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f, 10.0f),
+        Light(Light::Type::Point, glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 10.0f, 10.0f)
+    };
 
 // Forward declarations
 bool init(int argc, char** argv);
@@ -60,6 +68,9 @@ int main(int argc, char** argv) {
         // Render mesh
         meshRenderer->Render(camera->getViewMatrix(), camera->getProjectionMatrix(), camera->getPosition());
 
+        // Render light spheres
+        lightRenderer->Render(lights, camera->getViewMatrix(), camera->getProjectionMatrix());
+
         // Render triangle
         trianglerenderer->SetViewMatrix(camera->getViewMatrix());
         trianglerenderer->SetProjectionMatrix(camera->getProjectionMatrix());
@@ -87,9 +98,9 @@ bool init(int argc, char** argv) {
     // Set up resize callback
     glfwSetWindowSizeCallback(window->GetWindow(), resizeCallback);
 
-    //mesh renderer must be initialized after window is initialized and we have a valid OpenGL context
+    //light and mesh renderer must be initialized after window is initialized and we have a valid OpenGL context
     meshRenderer = new MeshRenderer();
-
+    lightRenderer = new LightRenderer();
 
     glEnable(GL_DEPTH_TEST);
     glFrontFace(GL_CW);
@@ -133,12 +144,6 @@ bool init(int argc, char** argv) {
     meshRenderer->AddInstance(instance);
 
     // Set up lighting using initializer list
-    std::vector<Light> lights = {
-        Light(Light::Type::Point, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 10.0f),
-        Light(Light::Type::Point, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, 10.0f),
-        Light(Light::Type::Point, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f, 10.0f),
-        Light(Light::Type::Point, glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 10.0f, 10.0f)
-    };
     meshRenderer->SetLights(lights);
 
     trianglerenderer->SetModelMatrix(glm::mat4(1.0f));

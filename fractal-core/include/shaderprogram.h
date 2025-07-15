@@ -22,8 +22,12 @@ class ShaderProgram
         void Use();
         void AttachShaderFromFile(const char* path, unsigned int shaderType);
         void Link();
+
         int GetAttribLocation(const char* name);
+
         void SetUniformMat4(const std::string& name, const glm::mat4& value);
+        void SetUniformVec3(const std::string& name, const glm::vec3& value);
+        void SetUniformFloat(const std::string& name, float value);
 };
 
 #endif

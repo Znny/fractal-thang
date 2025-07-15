@@ -78,3 +78,19 @@ void ShaderProgram::SetUniformMat4(const std::string& name, const glm::mat4& val
         glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
     }
 }
+
+void ShaderProgram::SetUniformVec3(const std::string& name, const glm::vec3& value)
+{
+    GLint location = glGetUniformLocation(programId, name.c_str());
+    if (location != -1) {
+        glUniform3fv(location, 1, &value[0]);
+    }
+}
+
+void ShaderProgram::SetUniformFloat(const std::string& name, float value)
+{
+    GLint location = glGetUniformLocation(programId, name.c_str());
+    if (location != -1) {
+        glUniform1f(location, value);
+    }
+}
