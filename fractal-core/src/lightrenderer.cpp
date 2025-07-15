@@ -16,6 +16,7 @@ void LightRenderer::Init()
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
 
+    //generate a fibonacci sphere from a number of points
     const float radius = 0.3f;
     const float numPoints = 100;
     const float PI = 3.1415926f;
@@ -35,18 +36,6 @@ void LightRenderer::Init()
 
     numVertices = vertices.size();
 
-    // generate indices
-    /*
-    for(int i = 0; i < numSegments; i++) {
-        for(int j = 0; j < numSegments; j++) {
-            indices.push_back(i * numSegments + j);
-        }
-        indices.push_back(i * numSegments);
-    }
-    */
-
-    numIndices = indices.size();
-
     //load shaders
     shader = new ShaderProgram();
     shader->AttachShaderFromFile("light.vert", GL_VERTEX_SHADER);
@@ -61,11 +50,6 @@ void LightRenderer::Init()
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-
-    //create EBO
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
     //set up vertex attributes
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
@@ -107,9 +91,6 @@ void LightRenderer::Render(const std::vector<Light>& lights, const glm::mat4& vi
         shader->SetUniformVec3("uColor", light.getColor());
         shader->SetUniformFloat("uIntensity", light.getIntensity());
 
-        //glDrawElements(GL_LINES, numIndices, GL_UNSIGNED_INT, 0);  
-
-        //glDrawElements(GL_POINTS, numVertices, GL_UNSIGNED_INT, 0);  
         glDrawArrays(GL_LINE_STRIP, 0, numVertices);
     }
 

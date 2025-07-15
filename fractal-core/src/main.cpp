@@ -19,12 +19,19 @@ TriangleRenderer* trianglerenderer = nullptr;
 Camera* camera = nullptr;
 MeshRenderer* meshRenderer = nullptr;
 LightRenderer* lightRenderer = nullptr;
-    std::vector<Light> lights = {
-        Light(Light::Type::Point, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 10.0f, 10.0f),
-        Light(Light::Type::Point, glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, 10.0f),
-        Light(Light::Type::Point, glm::vec3(0.0f, 3.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f, 10.0f),
-        Light(Light::Type::Point, glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 10.0f, 10.0f)
-    };
+
+//light positions
+std::vector<Light> lights = {
+    Light(Light::Type::Point, glm::vec3(0.0f, 15.0f, -45.0f/2.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), 100.0f, 10.0f),
+    Light(Light::Type::Point, glm::vec3(-5.5f, 4.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, 10.0f),
+    Light(Light::Type::Point, glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 10.0f, 10.0f),
+    Light(Light::Type::Point, glm::vec3(5.5f, 4.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 10.0f, 10.0f)
+};
+
+//time variables
+const auto startTime = std::chrono::high_resolution_clock::now();
+auto thisTime = std::chrono::high_resolution_clock::now();
+auto lastTime = std::chrono::high_resolution_clock::now();
 
 // Forward declarations
 bool init(int argc, char** argv);
@@ -51,8 +58,6 @@ int main(int argc, char** argv) {
 
     // Timing variables - calculate delta time each frame
     float dt = 0.0f;
-    auto thisTime = std::chrono::high_resolution_clock::now();
-    auto lastTime = std::chrono::high_resolution_clock::now();
 
     while (!window->ShouldClose()) {
         thisTime = std::chrono::high_resolution_clock::now();
@@ -66,6 +71,7 @@ int main(int argc, char** argv) {
         Tick(dt, *window, *camera, moveSpeed, rotateSpeed, rightMouseDown, lastMouseX, lastMouseY, firstMouse);
 
         // Render mesh
+        meshRenderer->SetLights(lights);
         meshRenderer->Render(camera->getViewMatrix(), camera->getProjectionMatrix(), camera->getPosition());
 
         // Render light spheres
@@ -86,7 +92,7 @@ int main(int argc, char** argv) {
 
 // Initialization function
 bool init(int argc, char** argv) {
-    window = new Window();
+    window = new Window(1920,1080);
     trianglerenderer = new TriangleRenderer();
     camera = new Camera();
 
@@ -154,6 +160,23 @@ bool init(int argc, char** argv) {
 // Tick function for frame-rate independent camera controls
 void Tick(float dt, Window& window, Camera& camera, float moveSpeed, float rotateSpeed, 
           bool& rightMouseDown, double& lastMouseX, double& lastMouseY, bool& firstMouse) {
+
+    // Oscillate white light 0 in y, and lights 1-3 in z, with phase offsets
+    float time = std::chrono::duration<float>(thisTime - startTime).count();
+    float t = std::sin(time);
+
+    // Light 0: oscillate in y
+    lights[0].setPosition(glm::vec3(0.0f, 7.5f, -45.0f/2.0f) + glm::vec3(0.0f, 7.5f * t, 0.0f));
+
+    // Lights 1-3: oscillate in z, offset by 30 in phase
+    for (int i = 1; i <= 3; ++i) {
+        float phase = (float)i * glm::pi<float>() * 2.0f / 3.0f; // 120 deg offset per light
+        float zOsc = -25.5f + 25.5f * std::sin(time + phase); // oscillate between 0 and -90
+        float x = (i == 1) ? -5.5f : (i == 3) ? 5.5f : 0.0f;
+        float y = 5.0f;
+        lights[i].setPosition(glm::vec3(x, y, zOsc));
+    }
+
     
     // Handle keyboard input for movement
     if (window.IsKeyPressed(GLFW_KEY_W)) {
@@ -174,6 +197,7 @@ void Tick(float dt, Window& window, Camera& camera, float moveSpeed, float rotat
     if (window.IsKeyPressed(GLFW_KEY_E)) {
         camera.moveUp(moveSpeed * dt);
     }
+
 
     // Handle mouse input for rotation
     if (window.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
