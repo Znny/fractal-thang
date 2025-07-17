@@ -10,6 +10,3 @@
 [submodule "external/glm"]
 	path = external/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "external/zlib"]
-	path = external/zlib
-	url = https://github.com/madler/zlib.git
