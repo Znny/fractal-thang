@@ -1,13 +1,14 @@
-#version 330 core
+#version 300 es
+precision highp float;
+precision highp int;
+
 out vec4 FragColor;
 
-in VS_OUT {
-    vec3 FragPos;
-    vec2 TexCoords;
-    vec3 TangentLightPos[4];
-    vec3 TangentViewPos;
-    vec3 TangentFragPos;
-} fs_in;
+in vec3 FragPos;
+in vec2 TexCoords;
+in vec3 TangentLightPos[4];
+in vec3 TangentViewPos;
+in vec3 TangentFragPos;
 
 uniform sampler2D albedoMap;
 uniform sampler2D normalMap;
@@ -36,24 +37,24 @@ vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 
 void main() {
     // Sample material properties
-    vec3 albedoValue = texture(albedoMap, fs_in.TexCoords).rgb;
+    vec3 albedoValue = texture(albedoMap, TexCoords).rgb;
     if (albedoValue == vec3(0.0)) albedoValue = albedo; // Use uniform if texture is black
     
-    float metallicValue = texture(metallicMap, fs_in.TexCoords).r;
+    float metallicValue = texture(metallicMap, TexCoords).r;
     if (metallicValue == 0.0) metallicValue = metallic;
     
-    float roughnessValue = texture(roughnessMap, fs_in.TexCoords).r;
+    float roughnessValue = texture(roughnessMap, TexCoords).r;
     if (roughnessValue == 0.0) roughnessValue = roughness;
     
-    float aoValue = texture(aoMap, fs_in.TexCoords).r;
+    float aoValue = texture(aoMap, TexCoords).r;
     if (aoValue == 0.0) aoValue = ao;
     
     // Normal mapping
-    vec3 normal = texture(normalMap, fs_in.TexCoords).rgb;
+    vec3 normal = texture(normalMap, TexCoords).rgb;
     normal = normalize(normal * 2.0 - 1.0);
     
     vec3 N = normalize(normal);
-    vec3 V = normalize(fs_in.TangentViewPos - fs_in.TangentFragPos);
+    vec3 V = normalize(TangentViewPos - TangentFragPos);
     
     // Calculate reflectance at normal incidence
     vec3 F0 = vec3(0.04);
@@ -62,9 +63,9 @@ void main() {
     // Lighting calculation
     vec3 Lo = vec3(0.0);
     for(int i = 0; i < 4; ++i) {
-        vec3 L = normalize(fs_in.TangentLightPos[i] - fs_in.TangentFragPos);
+        vec3 L = normalize(TangentLightPos[i] - TangentFragPos);
         vec3 H = normalize(V + L);
-        float distance = length(lightPositions[i] - fs_in.FragPos);
+        float distance = length(lightPositions[i] - FragPos);
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
         
