@@ -47,8 +47,8 @@ if [ "$TARGET" = "web" ]; then
     #ensure zlib is built with emscripten
     if [ ! -f external/zlib/libz.a ]; then
         cd external/zlib
-        emconfigure ./configure
-        emmake make -j$(nproc)
+        emconfigure ./configure --disable-shared
+        emmake make libz.a
         cd ../..
     else
         echo "Zlib lib already exists"
@@ -58,7 +58,7 @@ if [ "$TARGET" = "web" ]; then
     if [ ! -f external/assimp/lib/libassimp.a ]; then
     #ensure assimp is built with emscripten
         cd external/assimp
-        emcmake cmake CMakeLists.txt -DZLIB_LIBRARY=../zlib/libz.a -DZLIB_INCLUDE_DIR=../zlib/include
+        emcmake cmake CMakeLists.txt -DZLIB_LIBRARY=../zlib/libz.a -DZLIB_INCLUDE_DIR=../zlib
         emcmake cmake . -DCMAKE_BUILD_TYPE=Release -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_SAMPLES=OFF -DBUILD_SHARED_LIBS=OFF
         emmake make -j$(nproc)
         cd ../..
