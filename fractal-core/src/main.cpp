@@ -20,6 +20,7 @@ TriangleRenderer* trianglerenderer = nullptr;
 Camera* camera = nullptr;
 MeshRenderer* meshRenderer = nullptr;
 LightRenderer* lightRenderer = nullptr;
+Mesh* mesh = nullptr;
 
 //light positions
 std::vector<Light> lights = {
@@ -124,12 +125,12 @@ bool init(int argc, char** argv) {
     }
 
     // Load test mesh
-    auto mesh = std::make_shared<Mesh>(modelPath);
+    mesh = new Mesh(modelPath);
     if (!mesh || mesh->vertices.empty()) {
         std::cerr << "Failed to load " << modelPath << std::endl;
         return false;
     }
-    meshRenderer->SetMesh(mesh.get());
+    meshRenderer->SetMesh(mesh);
     
     // Load PBR shaders
     if (!meshRenderer->LoadShaders("pbr.vert", "pbr.frag")) {
