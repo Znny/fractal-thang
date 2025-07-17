@@ -43,6 +43,27 @@ if [ "$CLEAN" = true ]; then
 fi
 
 if [ "$TARGET" = "web" ]; then
+
+    #check if assimp lib exists
+    if [ ! -f external/assimp/lib/libassimp.a ]; then
+    #ensure assimp is built with emscripten
+        cd external/assimp
+        emcmake cmake CMakeLists.txt
+        emcmake cmake --build . -DBUILD_SHARED_LIBS=OFF
+        cd ../..
+    else
+        echo "Assimp lib already exists"
+    fi
+
+    #ensure zlib is built with emscripten
+    if [ ! -f external/zlib/libz.a ]; then
+        cd external/zlib
+        emmake make
+        cd ../..
+    else
+        echo "Zlib lib already exists"
+    fi
+
     # Build for web using emscripten
     echo "Building for web..."
     fractal-web/ems.sh emmake make web
