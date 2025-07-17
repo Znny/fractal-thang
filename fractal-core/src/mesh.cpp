@@ -107,18 +107,16 @@ void Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
     }
     
     // Process materials
-    if (mesh->mMaterialIndex >= 0) {
-        std::cout << "Processing material" << std::endl;
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+    std::cout << "Processing material " << mesh->mMaterialIndex << std::endl;
+    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         
-        // Load PBR textures from material
-        LoadMaterialTextures(material, aiTextureType_DIFFUSE, "albedo", scene);
-        LoadMaterialTextures(material, aiTextureType_NORMALS, "normal", scene);
-        LoadMaterialTextures(material, aiTextureType_METALNESS, "metallic", scene);
-        LoadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness", scene);
-        LoadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "ao", scene);
-        LoadMaterialTextures(material, aiTextureType_LIGHTMAP, "ao", scene);
-    }
+    // Load PBR textures from material
+    LoadMaterialTextures(material, aiTextureType_DIFFUSE, "albedo", scene);
+    LoadMaterialTextures(material, aiTextureType_NORMALS, "normal", scene);
+    LoadMaterialTextures(material, aiTextureType_METALNESS, "metallic", scene);
+    LoadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness", scene);
+    LoadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "ao", scene);
+    LoadMaterialTextures(material, aiTextureType_LIGHTMAP, "ao", scene);
 }
 
 void Mesh::SetupMesh() {

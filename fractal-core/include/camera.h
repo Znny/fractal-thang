@@ -37,7 +37,6 @@ public:
 
     // Projection
     void setPerspective(float fov, float aspect, float near, float far);
-    void setOrthographic(float left, float right, float bottom, float top, float near, float far);
     
     float getFOV() const;
     float getAspect() const;

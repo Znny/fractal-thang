@@ -49,6 +49,7 @@ WEB_CXX = em++
 WEB_CFLAGS = -I$(INCLUDE_DIR) \
              -Iexternal/glm \
              -I$(EMSCRIPTEN_INCLUDE_DIR) \
+             -I$(ASSIMP_INCLUDE_DIR) \
              -Wno-c++20-extensions \
              -MMD -MP
 
@@ -63,7 +64,9 @@ WEB_LINKER_FLAGS = -s WASM=1 \
                    -sMAX_WEBGL_VERSION=2 \
                    --no-entry \
                    -lembind -lstdc++ \
-                   --preload-file fractal-core/shaders@/shaders
+                   external/assimp/lib/libassimp.a \
+                   external/zlib/libz.a \
+                   --preload-file fractal-core/assets@/assets
 
 WEB_CXXFLAGS = $(WEB_CFLAGS)
 WEB_TSDFLAGS = --emit-tsd main.d.ts

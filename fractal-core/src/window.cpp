@@ -27,7 +27,7 @@ Window::~Window()
 bool Window::Init(const std::string& canvasId)
 {
     if (bIsInitialized) {
-        std::cout << "Window already initialized" << std::endl;
+        std::cout << "Window " << canvasId << " already initialized" << std::endl;
         return true;
     }
     

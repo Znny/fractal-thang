@@ -26,7 +26,10 @@ class Window
         int GetWidth() const { return width; }
         int GetHeight() const { return height; }
         bool IsInitialized() const { return bIsInitialized; }
+
+        #ifndef __EMSCRIPTEN__
         GLFWwindow* GetWindow() const { return window; }
+        #endif
         
         // Input methods
         bool IsKeyPressed(int key) const;

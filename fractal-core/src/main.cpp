@@ -13,6 +13,7 @@
 #include "mesh.h"
 #include "lightrenderer.h"
 
+#ifndef __EMSCRIPTEN__
 // Global variables
 Window* window = nullptr;
 TriangleRenderer* trianglerenderer = nullptr;
@@ -40,7 +41,6 @@ void Tick(float dt, Window& window, Camera& camera, float moveSpeed, float rotat
 void resizeCallback(GLFWwindow* window, int width, int height);
 
 // main function
-#ifndef __EMSCRIPTEN__
 int main(int argc, char** argv) {
     
     // Initialize the application
@@ -129,7 +129,7 @@ bool init(int argc, char** argv) {
         std::cerr << "Failed to load " << modelPath << std::endl;
         return false;
     }
-    meshRenderer->SetMesh(mesh);
+    meshRenderer->SetMesh(mesh.get());
     
     // Load PBR shaders
     if (!meshRenderer->LoadShaders("pbr.vert", "pbr.frag")) {
@@ -231,7 +231,10 @@ void Tick(float dt, Window& window, Camera& camera, float moveSpeed, float rotat
 // Resize callback function
 void resizeCallback(GLFWwindow* window, int width, int height) {
     if (width > 0 && height > 0) {
-
+        if(window == nullptr) {
+            std::cerr << "Window is nullptr in resizeCallback" << std::endl;
+            return;
+        }
         // Update viewport
         glViewport(0, 0, width, height);
         

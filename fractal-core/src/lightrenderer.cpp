@@ -77,8 +77,6 @@ void LightRenderer::Render(const std::vector<Light>& lights, const glm::mat4& vi
 
     //draw spheres
     for(const auto& light : lights) {
-        glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), light.getPosition());
-
          // Create billboard matrix
          glm::mat4 billboardMatrix = glm::mat4(
             glm::vec4(cameraRight, 0.0f),

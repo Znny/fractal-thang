@@ -59,7 +59,6 @@ EMSCRIPTEN_BINDINGS(my_module) {
         .function("getTransformMatrix", &Camera::getTransformMatrix)
         // Projection methods
         .function("setPerspective", &Camera::setPerspective)
-        .function("setOrthographic", &Camera::setOrthographic)
         .function("getFOV", &Camera::getFOV)
         .function("getAspect", &Camera::getAspect)
         .function("getNear", &Camera::getNear)
@@ -120,16 +119,18 @@ EMSCRIPTEN_BINDINGS(my_module) {
         .constructor<const std::string&>()
         .function("draw", &Mesh::Draw)
         .function("loadPBRTextures", &Mesh::LoadPBRTextures);
+
+    emscripten::class_<MeshInstance>("MeshInstance")
+        .constructor<>();
     
     // MeshRenderer class
     emscripten::class_<MeshRenderer>("MeshRenderer")
         .constructor<>()
-        .function("setMesh", &MeshRenderer::SetMesh)
+        .function("setMesh", &MeshRenderer::SetMesh, emscripten::allow_raw_pointers())
         .function("addInstance", &MeshRenderer::AddInstance)
         .function("clearInstances", &MeshRenderer::ClearInstances)
         .function("setTransform", &MeshRenderer::SetTransform)
         .function("setMaterial", &MeshRenderer::SetMaterial)
-        .function("setLights", &MeshRenderer::SetLights)
         .function("setLight", &MeshRenderer::SetLight)
         .function("render", &MeshRenderer::Render)
         .function("loadShaders", &MeshRenderer::LoadShaders)

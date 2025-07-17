@@ -117,14 +117,6 @@ void Camera::setPerspective(float fov, float aspect, float near, float far) {
     m_isPerspective = true;
 }
 
-void Camera::setOrthographic(float left, float right, float bottom, float top, float near, float far) {
-    m_near = near;
-    m_far = far;
-    m_isPerspective = false;
-    // Note: For orthographic, we'd need to store the bounds, but for simplicity
-    // we'll use the perspective parameters to calculate orthographic bounds
-}
-
 float Camera::getFOV() const {
     return m_fov;
 }

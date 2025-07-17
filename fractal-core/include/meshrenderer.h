@@ -23,13 +23,13 @@ public:
     ~MeshRenderer();
 
     // Mesh management
-    void SetMesh(std::shared_ptr<Mesh> mesh);
+    void SetMesh(Mesh* mesh);
     void AddInstance(const MeshInstance& instance);
     void ClearInstances();
     
     // Transform management
-    void SetTransform(int instanceIndex, const glm::mat4& transform);
-    void SetMaterial(int instanceIndex, const glm::vec3& albedo, float metallic, float roughness, float ao);
+    void SetTransform(long unsigned int instanceIndex, const glm::mat4& transform);
+    void SetMaterial(long unsigned int instanceIndex, const glm::vec3& albedo, float metallic, float roughness, float ao);
     
     // Light management
     void SetLights(const std::vector<Light>& lights);
@@ -48,7 +48,7 @@ private:
     ShaderProgram m_shaderProgram;
     
     // Mesh and instances
-    std::shared_ptr<Mesh> m_mesh;
+    Mesh* m_mesh;
     std::vector<MeshInstance> m_instances;
     
     // Lights

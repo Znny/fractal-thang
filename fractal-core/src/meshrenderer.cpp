@@ -15,7 +15,7 @@ MeshRenderer::~MeshRenderer() {
     // ShaderProgram destructor handles cleanup
 }
 
-void MeshRenderer::SetMesh(std::shared_ptr<Mesh> mesh) {
+void MeshRenderer::SetMesh(Mesh* mesh) {
     m_mesh = mesh;
 }
 
@@ -27,14 +27,14 @@ void MeshRenderer::ClearInstances() {
     m_instances.clear();
 }
 
-void MeshRenderer::SetTransform(int instanceIndex, const glm::mat4& transform) {
-    if (instanceIndex >= 0 && instanceIndex < m_instances.size()) {
+void MeshRenderer::SetTransform(long unsigned int instanceIndex, const glm::mat4& transform) {
+    if (instanceIndex < m_instances.size()) {
         m_instances[instanceIndex].transform = transform;
     }
 }
 
-void MeshRenderer::SetMaterial(int instanceIndex, const glm::vec3& albedo, float metallic, float roughness, float ao) {
-    if (instanceIndex >= 0 && instanceIndex < m_instances.size()) {
+void MeshRenderer::SetMaterial(long unsigned int instanceIndex, const glm::vec3& albedo, float metallic, float roughness, float ao) {
+    if (instanceIndex < m_instances.size()) {
         m_instances[instanceIndex].albedo = albedo;
         m_instances[instanceIndex].metallic = metallic;
         m_instances[instanceIndex].roughness = roughness;
