@@ -1,13 +1,16 @@
 import './App.css'
 import { useState, useEffect, useRef } from 'react'
 import Fractal from './cpp/main'
-import type { MainModule as FractalModule, TriangleRenderer, Window, Mat4, Vec3, Camera } from './cpp/main.d'
+import type { MainModule as FractalModule, TriangleRenderer, Window, Mat4, Vec3, Camera, MeshRenderer, Mesh, Light, MeshInstance } from './cpp/main.d'
 
 export default function App() {
   const [wasmModule, setWasmModule] = useState<FractalModule>()
   const [window, setWindow] = useState<Window>()
   const [renderer, setRenderer] = useState<TriangleRenderer>()
   const [camera, setCamera] = useState<Camera>()
+  const [meshRenderer, setMeshRenderer] = useState<MeshRenderer>()
+  const [mesh, setMesh] = useState<Mesh>()
+  const [light, setLight] = useState<Light>()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   
   // Camera control state
@@ -17,6 +20,7 @@ export default function App() {
   const [firstMouse, setFirstMouse] = useState(true)
   const animationRef = useRef<number | undefined>(undefined)
   const keysRef = useRef<Set<string>>(new Set())
+  const meshRendererRef = useRef<MeshRenderer | undefined>(undefined)
 
   // Key code constants for layout-independent input
   const KEY_CODES = {
@@ -44,6 +48,13 @@ export default function App() {
       // Create camera instance
       const cameraInstance = new instance.Camera()
       setCamera(cameraInstance)
+
+      // Create a simple light
+      const lightInstance = new instance.Light()
+      lightInstance.setPosition(new instance.Vec3(2.0, 2.0, 2.0))
+      lightInstance.setColor(new instance.Vec3(1.0, 1.0, 1.0))
+      lightInstance.setIntensity(1.0)
+      setLight(lightInstance)
     }
     ).catch((err) => {
       console.error('Failed to load WebAssembly module:', err)
@@ -52,11 +63,13 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (window && renderer && wasmModule && camera && canvasRef.current) {
+    if (window && renderer && wasmModule && camera && light && canvasRef.current) {
       console.log('Initializing OpenGL context...')
       const success = window.init('#'+canvasRef.current.id)
       if (success) {
         console.log('OpenGL context initialized successfully')
+
+        wasmModule.glEnable(wasmModule.GL_DEPTH_TEST)
         // Set canvas size
         const canvas = canvasRef.current
         canvas.width = window.getWidth()
@@ -67,13 +80,21 @@ export default function App() {
         camera.setRotation(new wasmModule.Vec3(0, 0, 0))
         camera.setScale(new wasmModule.Vec3(1, 1, 1))
 
+        // Create mesh renderer instance
+        const meshRendererInstance = new wasmModule.MeshRenderer()
+        setMeshRenderer(meshRendererInstance)
+        meshRendererRef.current = meshRendererInstance
+
+        // Initialize mesh renderer with the instance directly
+        initializeMeshRenderer(meshRendererInstance)
+
         // Start the render loop
         startRenderLoop()
       } else {
         console.error('Failed to initialize OpenGL context')
       }
     }
-  }, [renderer, wasmModule, camera])
+  }, [renderer, wasmModule, camera, light])
 
   // Input handlers
   useEffect(() => {
@@ -150,6 +171,36 @@ export default function App() {
     }
   }, [mouseDown, firstMouse, lastMousePos, camera])
 
+  const initializeMeshRenderer = (rendererInstance?: MeshRenderer) => {
+    const mrenderer = rendererInstance || meshRenderer
+    if (!mrenderer || !wasmModule) {
+      console.error("Mesh renderer or wasmModule is not initialized")
+      return
+    }
+
+    try {
+      // Load shaders (you'll need to provide the shader files)
+      const shaderLoaded = mrenderer.loadShaders("pbr.vert", "pbr.frag")
+      if (!shaderLoaded) {
+        console.warn("Failed to load mesh shaders, using default")
+      }
+
+      const meshInstance = new wasmModule.Mesh('columns.fbx')
+      mrenderer.setMesh(meshInstance)
+
+      // Create a simple mesh instance
+      const instance = new wasmModule.MeshInstance()
+      mrenderer.addInstance(instance)
+
+      // Set the light
+      mrenderer.setLight(0, light!)
+
+      console.log("Mesh renderer initialized successfully")
+    } catch (error) {
+      console.error("Failed to initialize mesh renderer:", error)
+    }
+  }
+
   const tick = (dt: number) => {
     if (!camera) return
 
@@ -187,19 +238,32 @@ export default function App() {
       // Update camera controls
       tick(dt)
 
-      // Render frame
-      if (renderer && camera) {
+      // Render mesh if available (primary renderer)
+      if (meshRendererRef.current && camera) {
+        if(Math.floor(currentTime / 16.67) % 60 === 0) {
+          console.log("Rendering mesh")
+        }
+        const viewMatrix = camera.getViewMatrix()
+        const projectionMatrix = camera.getProjectionMatrix()
+        const viewPos = camera.getPosition()
+        meshRendererRef.current!.render(viewMatrix, projectionMatrix, viewPos)
+      }
+      // Fallback to triangle renderer if mesh renderer is not available
+      else if (renderer && camera) {
+        if(Math.floor(currentTime / 16.67) % 60 === 0) {
+          console.log("Rendering triangle")
+        }
         const identityMatrix = new wasmModule!.Mat4(1)
         renderer.setModelMatrix(identityMatrix)
         renderer.setViewMatrix(camera.getViewMatrix())
         renderer.setProjectionMatrix(camera.getProjectionMatrix())
         renderer.render()
-        
-        // Debug: Log camera position every 60 frames (once per second at 60fps)
-        if (Math.floor(currentTime / 16.67) % 60 === 0) { // 16.67ms = 60fps
-          const pos = camera.getPosition()
-          //console.log('Camera position:', pos)
-        }
+      }
+      
+      // Debug: Log camera position every 60 frames (once per second at 60fps)
+      if (camera && Math.floor(currentTime / 16.67) % 60 === 0) { // 16.67ms = 60fps
+        const pos = camera.getPosition()
+        //console.log('Camera position:', pos)
       }
 
       // Continue loop

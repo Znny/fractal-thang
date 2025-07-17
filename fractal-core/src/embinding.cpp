@@ -16,6 +16,10 @@
 #include "meshrenderer.h"
 
 EMSCRIPTEN_BINDINGS(my_module) {
+
+    emscripten::class_<std::vector<Light>>("LightVector")
+        .constructor<>()
+        .function("size", &std::vector<Light>::size);
     
     // GLM Vector3 binding
     emscripten::class_<glm::vec3>("Vec3")
@@ -132,9 +136,16 @@ EMSCRIPTEN_BINDINGS(my_module) {
         .function("setTransform", &MeshRenderer::SetTransform)
         .function("setMaterial", &MeshRenderer::SetMaterial)
         .function("setLight", &MeshRenderer::SetLight)
+        .function("setLights", &MeshRenderer::SetLights)
         .function("render", &MeshRenderer::Render)
         .function("loadShaders", &MeshRenderer::LoadShaders)
         .function("useShader", &MeshRenderer::UseShader);
+
+    // OpenGL bindings
+    emscripten::function("glEnable", &glEnable);
+    emscripten::function("glDisable", &glDisable);
+    emscripten::constant("GL_DEPTH_TEST", GL_DEPTH_TEST);
+
 }
 
 
