@@ -10,6 +10,7 @@ SRC_DIR = fractal-core/src
 INCLUDE_DIR = fractal-core/include
 EMSCRIPTEN_INCLUDE_DIR = ${EMSDK}/upstream/emscripten/cache/sysroot/include
 ASSIMP_INCLUDE_DIR = external/assimp/include
+NATIVE_BIN_DIR = fractal-core/bin
 
 # Create object directories
 $(shell mkdir -p $(NATIVE_OBJ_DIR))
@@ -39,7 +40,7 @@ NATIVE_CXX = g++
 NATIVE_CFLAGS = -Wall -Wextra -O2 -g -I$(INCLUDE_DIR) -Iexternal/glm -MMD -MP
 NATIVE_LINKER_FLAGS = -lglfw -lGL -lGLEW -lassimp
 NATIVE_CXXFLAGS = $(NATIVE_CFLAGS) -std=c++17
-NATIVE_TARGET = $(BUILD_DIR)/fractal
+NATIVE_TARGET = $(NATIVE_BIN_DIR)/fractal
 
 # Web build configuration
 WEB_CC = emcc
@@ -64,7 +65,7 @@ WEB_LINKER_FLAGS = -s WASM=1 \
                    -sMAX_WEBGL_VERSION=2 \
                    --no-entry \
                    -lembind -lstdc++ \
-                   external/assimp/lib/libassimp.a \
+                   fractal-core/lib/libassimp.a \
                    external/zlib/libz.a \
                    --preload-file fractal-core/assets@/assets
 
