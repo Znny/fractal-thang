@@ -40,7 +40,7 @@ if [ ! -f fractal-core/bin/libassimp.so ]; then
 
         cd external/assimp
         rm CMakeCache.txt
-        cmake CMakeLists.txt 
+        cmake CMakeLists.txt -DASSIMP_BUILD_ZLIB=ON
         cmake --build .
         cd ../..
     fi
