@@ -25,6 +25,7 @@ A project for rendering and visualizing fractals using C++ (compiled to WebAssem
 
 ## Setup
 
+
 1. Install dependencies:
 ```bash
 #install emsdk(if not already installed)
@@ -38,6 +39,12 @@ cd fractal-thang
 #install web dependencies
 cd fractal-web
 pnpm install
+
+#init and pull dependencies
+git submodule init
+git submodule update
+
+
 ```
 
 2. Setup Google Test (one-time setup):
