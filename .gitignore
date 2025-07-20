@@ -33,3 +33,5 @@ pnpm-debug.log*
 
 fractal-web/src/cpp/*
 fractal-web/public/*
+fractal-core/bin/
+fractal-core/lib/
