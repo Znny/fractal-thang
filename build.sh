@@ -39,7 +39,9 @@ if [ ! -f fractal-core/bin/libassimp.so ]; then
         echo "Assimp shared lib not found, building..."
 
         cd external/assimp
-        rm CMakeCache.txt
+        if [ -f CMakeCache.txt ]; then
+            rm CMakeCache.txt
+        fi
         cmake CMakeLists.txt -DASSIMP_BUILD_ZLIB=ON
         cmake --build .
         cd ../..
@@ -74,7 +76,9 @@ if [ ! -f fractal-core/lib/libassimp.a ]; then
 
         if [ ! -f external/assimp/lib/libassimp.a ]; then
         cd external/assimp
-        rm CMakeCache.txt
+        if [ -f CMakeCache.txt ]; then
+            rm CMakeCache.txt
+        fi
         $EMSSH emcmake cmake CMakeLists.txt -DZLIB_LIBRARY=../zlib/libz.a -DZLIB_INCLUDE_DIR=../zlib
         $EMSSH emcmake cmake . -DCMAKE_BUILD_TYPE=Release -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_SAMPLES=OFF -DBUILD_SHARED_LIBS=OFF
         $EMSSH emmake make -j$(nproc)
