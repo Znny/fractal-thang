@@ -10,6 +10,7 @@
 #include <assimp/postprocess.h>
 
 #include "assetutils.h"
+#include "Texture.h"
 
 struct Vertex {
     glm::vec3 position;
@@ -19,13 +20,9 @@ struct Vertex {
     glm::vec3 bitangent;
 };
 
-struct Texture {
-    unsigned int id;
-    std::string type;
-    std::string path;
-};
 
 class Mesh {
+    friend class MeshRenderer;
 public:
     Mesh(const std::string& filename);
     ~Mesh();
@@ -33,15 +30,8 @@ public:
     // Mesh data
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures;
-    
-    // PBR texture IDs
-    unsigned int albedoTexture;
-    unsigned int normalTexture;
-    unsigned int metallicTexture;
-    unsigned int roughnessTexture;
-    unsigned int aoTexture;
-    
+
+
     // Default PBR values
     glm::vec3 albedo;
     float metallic;
@@ -51,26 +41,14 @@ public:
     // Rendering
     void Draw() const;
     
-    // Texture loading
-    void LoadPBRTextures(const std::string& albedoPath, 
-                        const std::string& normalPath,
-                        const std::string& metallicPath,
-                        const std::string& roughnessPath,
-                        const std::string& aoPath = "");
-
 private:
     // OpenGL objects
     unsigned int VAO, VBO, EBO;
+    unsigned int textureIndex[(unsigned long)TextureType::MAX_TEXTURE_TYPES] = {0};
     
     // Setup functions
     void SetupMesh();
     void ProcessNode(aiNode* node, const aiScene* scene);
     void ProcessMesh(aiMesh* mesh, const aiScene* scene);
     
-    // Texture loading
-    unsigned int LoadTexture(const std::string& path, const aiScene* scene);
-    unsigned int LoadTextureHDR(const std::string& path);
-    
-    // Utility
-    std::vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName, const aiScene* scene);
 }; 

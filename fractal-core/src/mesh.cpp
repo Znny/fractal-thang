@@ -1,13 +1,17 @@
-#include "mesh.h"
 #include <iostream>
+#include <memory>
+
 #include "assimp/material.h"
+
+
 #include "glreq.h"
-#include "textureloader.h"
+#include "Texture.h"
 #include "assetutils.h"
+#include "mesh.h"
+#include "TextureManager.h"
 
 Mesh::Mesh(const std::string& filename) 
-    : albedoTexture(0), normalTexture(0), metallicTexture(0), roughnessTexture(0), aoTexture(0),
-      albedo(1.0f, 0.0f, 1.0f), metallic(0.0f), roughness(0.5f), ao(1.0f) {
+    : albedo(1.0f, 0.0f, 1.0f), metallic(0.0f), roughness(0.5f), ao(1.0f) {
     
     // Resolve the full path using AssetUtils
     std::string filepath = AssetUtils::resolveModelPath(filename);
@@ -49,7 +53,7 @@ void Mesh::ProcessNode(aiNode* node, const aiScene* scene) {
 
 void Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
     // Store the current number of vertices as the offset
-    unsigned int vertexOffset = vertices.size();
+    unsigned int indexOffset = vertices.size();
 
     // Process vertices
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -103,7 +107,7 @@ void Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
     for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
         aiFace face = mesh->mFaces[i];
         for (unsigned int j = 0; j < face.mNumIndices; j++) {
-            indices.push_back(face.mIndices[j] + vertexOffset);
+            indices.push_back(face.mIndices[j] + indexOffset);
         }
     }
     
@@ -113,6 +117,7 @@ void Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
     std::cout << "Material name: " << material->GetName().C_Str() << std::endl;
 
     //debug print all texture types and their paths
+    
     /*
     aiTextureType firstTextureType = aiTextureType_NONE;
     aiTextureType lastTextureType = AI_TEXTURE_TYPE_MAX;
@@ -124,33 +129,45 @@ void Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
             std::cout << "Texture path: " << str.C_Str() << std::endl;
         }
     }
-    */        
+    */
+            
+    const std::vector<aiTextureType> TextureTypeMappings[(unsigned long)TextureType::MAX_TEXTURE_TYPES] =
+    {
+        {aiTextureType_DIFFUSE, aiTextureType_BASE_COLOR}, // ALBEDO
+        {aiTextureType_NORMALS, aiTextureType_NORMAL_CAMERA}, // NORMAL
+        {aiTextureType_METALNESS}, // METALLIC
+        {aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_SHININESS}, // ROUGHNESS
+        {aiTextureType_LIGHTMAP, aiTextureType_AMBIENT_OCCLUSION} // AO
+    };
 
-    // Load PBR textures from material
-    LoadMaterialTextures(material, aiTextureType_DIFFUSE, "albedo", scene);
-    if(albedoTexture == 0) {
-        LoadMaterialTextures(material, aiTextureType_BASE_COLOR, "albedo", scene);
-    }
+    for(unsigned int i = 0; i < (unsigned long)TextureType::MAX_TEXTURE_TYPES; i++) 
+    {
+        for(aiTextureType type : TextureTypeMappings[i])
+        {
+            if(textureIndex[i] != 0)
+            {
+                continue;
+            }
 
-    LoadMaterialTextures(material, aiTextureType_NORMALS, "normal", scene);
-    if(normalTexture == 0) {
-        LoadMaterialTextures(material, aiTextureType_NORMAL_CAMERA, "normal", scene);
-    }
-
-    LoadMaterialTextures(material, aiTextureType_METALNESS, "metallic", scene);
-
-    LoadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness", scene);
-    if(roughnessTexture == 0) {
-        LoadMaterialTextures(material, aiTextureType_SHININESS, "roughness", scene);
-    }
-
-    LoadMaterialTextures(material, aiTextureType_LIGHTMAP, "ao", scene);
-    if(aoTexture == 0) {
-        LoadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "ao", scene);
+            if(material->GetTextureCount(type) > 0)
+            {
+                std::cout << "Loading " << TextureTypeToString((TextureType)i) << " texture of assimp type " << aiTextureTypeToString(type) << std::endl;
+                aiString texturePath;
+                material->GetTexture(type, 0, &texturePath);
+                std::cout << "Texture path: " << texturePath.C_Str() << std::endl;
+                std::shared_ptr<Texture> texture = TextureManager::GetInstance()->LoadTexture(texturePath.C_Str(), (TextureType)i);
+                if (texture != nullptr) {
+                    textureIndex[i] = texture->GetTextureId();
+                } else {
+                    std::cerr << "Failed to load texture: " << texturePath.C_Str() << std::endl;
+                }
+            }
+        }
     }
 }
 
-void Mesh::SetupMesh() {
+void Mesh::SetupMesh() 
+{
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -186,76 +203,12 @@ void Mesh::SetupMesh() {
     glBindVertexArray(0);
 }
 
-void Mesh::Draw() const {
+void Mesh::Draw() const 
+{
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
-void Mesh::LoadPBRTextures(const std::string& albedoPath, 
-                          const std::string& normalPath,
-                          const std::string& metallicPath,
-                          const std::string& roughnessPath,
-                          const std::string& aoPath) {
-    
-    // This method is kept for backward compatibility but textures are now loaded
-    // automatically from Assimp materials during mesh processing
-    if (!albedoPath.empty()) albedoTexture = LoadTexture(albedoPath, nullptr); // Pass nullptr for now
-    if (!normalPath.empty()) normalTexture = LoadTexture(normalPath, nullptr); // Pass nullptr for now
-    if (!metallicPath.empty()) metallicTexture = LoadTexture(metallicPath, nullptr); // Pass nullptr for now
-    if (!roughnessPath.empty()) roughnessTexture = LoadTexture(roughnessPath, nullptr); // Pass nullptr for now
-    if (!aoPath.empty()) aoTexture = LoadTexture(aoPath, nullptr); // Pass nullptr for now
-}
 
-unsigned int Mesh::LoadTexture(const std::string& path, const aiScene* scene) {
-    // Check if this is an embedded texture path (contains .fbm or similar)
-    if (path.find(".fbm") != std::string::npos) {
-        return TextureLoader::getInstance().loadEmbeddedTexture(path, scene);
-    }
-    
-    // Check if this is an embedded texture (starts with '*')
-    if (path[0] == '*') {
-        return TextureLoader::getInstance().createDefaultTexture(path);
-    }
-    
-    // For external textures, use the texture loader with AssetUtils path resolution
-    return TextureLoader::getInstance().loadTexture(path);
-}
 
-std::vector<Texture> Mesh::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName, const aiScene* scene) {
-    std::vector<Texture> textures;
-    
-    for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
-        aiString str;
-        mat->GetTexture(type, i, &str);
-        
-        // Check if texture was already loaded
-        bool skip = false;
-        for (unsigned int j = 0; j < textures.size(); j++) {
-            if (std::strcmp(textures[j].path.c_str(), str.C_Str()) == 0) {
-                textures.push_back(textures[j]);
-                skip = true;
-                std::cout << "Skipping duplicate texture: " << str.C_Str() << std::endl;
-                break;
-            }
-        }
-        
-        if (!skip) {
-            Texture texture;
-            texture.id = LoadTexture(str.C_Str(), scene); // Pass the scene for embedded texture loading
-            texture.type = typeName;
-            texture.path = str.C_Str();
-            textures.push_back(texture);
-            
-            std::cout << "Loaded " << typeName << " texture with ID: " << texture.id << std::endl;
-            
-            // Assign to appropriate PBR texture slot
-            if (typeName == "albedo") albedoTexture = texture.id;
-            else if (typeName == "normal") normalTexture = texture.id;
-            else if (typeName == "metallic") metallicTexture = texture.id;
-            else if (typeName == "roughness") roughnessTexture = texture.id;
-            else if (typeName == "ao") aoTexture = texture.id;
-        }
-    }
-    return textures;
-} 

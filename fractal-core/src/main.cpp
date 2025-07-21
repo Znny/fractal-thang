@@ -12,10 +12,12 @@
 #include "meshrenderer.h"
 #include "mesh.h"
 #include "lightrenderer.h"
+#include "TextureManager.h"
 
 #ifndef __EMSCRIPTEN__
 // Global variables
 Window* window = nullptr;
+TextureManager* textureManager = nullptr;
 TriangleRenderer* trianglerenderer = nullptr;
 Camera* camera = nullptr;
 MeshRenderer* meshRenderer = nullptr;
@@ -104,6 +106,8 @@ bool init(int argc, char** argv) {
 
     // Set up resize callback
     glfwSetWindowSizeCallback(window->GetWindow(), resizeCallback);
+
+    textureManager = TextureManager::GetInstance();
 
     //light and mesh renderer must be initialized after window is initialized and we have a valid OpenGL context
     meshRenderer = new MeshRenderer();

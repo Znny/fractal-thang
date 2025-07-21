@@ -61,20 +61,10 @@ void MeshRenderer::Render(const glm::mat4& viewMatrix, const glm::mat4& projecti
     if(bFirstRender) {
         bFirstRender = false;
         std::cout << "First render" << std::endl;
-        if(m_mesh->albedoTexture) {
-            std::cout << "Albedo texture: " << m_mesh->albedoTexture << std::endl;
-        }
-        if(m_mesh->normalTexture) {
-            std::cout << "Normal texture: " << m_mesh->normalTexture << std::endl;
-        }
-        if(m_mesh->metallicTexture) {
-            std::cout << "Metallic texture: " << m_mesh->metallicTexture << std::endl;
-        }
-        if(m_mesh->roughnessTexture) {
-            std::cout << "Roughness texture: " << m_mesh->roughnessTexture << std::endl;
-        }
-        if(m_mesh->aoTexture) { 
-            std::cout << "AO texture: " << m_mesh->aoTexture << std::endl;
+        for(unsigned int i = 0; i < (unsigned long)TextureType::MAX_TEXTURE_TYPES; i++) {
+            if(m_mesh->textureIndex[i] != 0) {
+                std::cout << "Texture " << TextureTypeToString((TextureType)i) << " loaded, index: " << m_mesh->textureIndex[i] << std::endl;
+            }
         }
     }
     
@@ -85,6 +75,22 @@ void MeshRenderer::Render(const glm::mat4& viewMatrix, const glm::mat4& projecti
     
     // Set light uniforms
     SetLightUniforms();
+
+    std::vector<const char*> textureNames = {
+        "albedoMap",
+        "normalMap",
+        "metallicMap",
+        "roughnessMap",
+        "aoMap"
+    };
+
+    for(unsigned int i = 0; i < (unsigned long)TextureType::MAX_TEXTURE_TYPES; i++) {
+        if(m_mesh->textureIndex[i] != 0) {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, m_mesh->textureIndex[i]);
+            glUniform1i(glGetUniformLocation(m_shaderProgram.programId, textureNames[i]), i);
+        }
+    }
     
     // Render each instance
     for (const auto& instance : m_instances) {
@@ -94,37 +100,8 @@ void MeshRenderer::Render(const glm::mat4& viewMatrix, const glm::mat4& projecti
         // Set matrix uniforms
         SetMatrixUniforms(instance.transform, viewMatrix, projectionMatrix);
         
-        // Bind textures
-        if (m_mesh->albedoTexture) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, m_mesh->albedoTexture);
-            glUniform1i(glGetUniformLocation(m_shaderProgram.programId, "albedoMap"), 0);
-        }
         
-        if (m_mesh->normalTexture) {
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, m_mesh->normalTexture);
-            glUniform1i(glGetUniformLocation(m_shaderProgram.programId, "normalMap"), 1);
-        }
-        
-        if (m_mesh->metallicTexture) {
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, m_mesh->metallicTexture);
-            glUniform1i(glGetUniformLocation(m_shaderProgram.programId, "metallicMap"), 2);
-        }
-        
-        if (m_mesh->roughnessTexture) {
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, m_mesh->roughnessTexture);
-            glUniform1i(glGetUniformLocation(m_shaderProgram.programId, "roughnessMap"), 3);
-        }
-        
-        if (m_mesh->aoTexture) {
-            glActiveTexture(GL_TEXTURE4);
-            glBindTexture(GL_TEXTURE_2D, m_mesh->aoTexture);
-            glUniform1i(glGetUniformLocation(m_shaderProgram.programId, "aoMap"), 4);
-        }
-        
+
         // Draw mesh
         m_mesh->Draw();
     }
