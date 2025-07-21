@@ -69,7 +69,7 @@ public:
     Texture();
     ~Texture();
 
-    const GLuint GetTextureId() const { return data.id; };
+    GLuint GetTextureId() const { return data.id; };
     const TextureType& GetType() const { return type; };
     const TextureData& GetData() const { return data; };
     const TextureParameters& GetParameters() const { return parameters; };

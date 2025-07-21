@@ -106,9 +106,9 @@ void TextureManager::GenerateDefaultTexture() {
 
     const unsigned int checkerSize = 32;
     unsigned char* pixelData = static_cast<unsigned char*>(textureData.pixels);
-    for(int s = 0; s < textureData.width; s++) 
+    for(GLuint s = 0; s < textureData.width; s++) 
     {
-        for(int t = 0; t < textureData.height; t++) 
+        for(GLuint t = 0; t < textureData.height; t++) 
         {
             int index = (s * textureData.width + t) * textureData.channels;
 

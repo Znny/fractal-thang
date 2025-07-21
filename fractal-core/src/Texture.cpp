@@ -28,13 +28,6 @@ void Texture::CreateTextureFromData(const TextureData& data, const TextureParame
     glGenTextures(1, &this->data.id);
     glBindTexture(GL_TEXTURE_2D, this->data.id);
     
-    GLenum format = GL_RGB;
-    if (this->data.channels == 4) {
-        format = GL_RGBA;
-    } else if (this->data.channels == 1) {
-        format = GL_RED;
-    }
-
     // Set the format based on number of channels
     if (this->data.channels == 4) {
         this->data.format = GL_RGBA;
@@ -69,6 +62,4 @@ void Texture::CreateTextureFromData(const TextureData& data, const TextureParame
    // Generate mipmaps
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, this->parameters.maxLevel);
    glGenerateMipmap(GL_TEXTURE_2D);
-
-   this->Print();
 }

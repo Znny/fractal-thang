@@ -120,8 +120,8 @@ clean:
 	rm -rf $(NATIVE_OBJ_DIR) $(WEB_OBJ_DIR)
 	rm -f fractal-web/src/cpp/*
 	rm -f fractal-web/public/main.*
-	rm -rf fractal-core/bin
-	rm -rf fractal-core/lib
+	rm -rf fractal-core/bin/*
+	rm -rf fractal-core/lib/*
 
 # Preserve dependency files
 .PRECIOUS: $(NATIVE_DEPS) $(WEB_DEPS)
