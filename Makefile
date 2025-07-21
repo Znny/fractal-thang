@@ -15,6 +15,7 @@ NATIVE_BIN_DIR = fractal-core/bin
 # Create object directories
 $(shell mkdir -p $(NATIVE_OBJ_DIR))
 $(shell mkdir -p $(WEB_OBJ_DIR))
+$(shell mkdir -p $(NATIVE_BIN_DIR))
 
 # Source files
 ALL_SRC = $(wildcard $(SRC_DIR)/*.cpp)
@@ -37,9 +38,22 @@ WEB_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.d,$(WEB_SRC))
 # Native build configuration
 NATIVE_CC = gcc
 NATIVE_CXX = g++
-NATIVE_CFLAGS = -Wall -Wextra -O2 -g -I$(INCLUDE_DIR) -Iexternal/glm -MMD -MP
-NATIVE_LINKER_FLAGS = -lglfw -lGL -lGLEW -lassimp
-NATIVE_CXXFLAGS = $(NATIVE_CFLAGS) -std=c++17
+NATIVE_CXXFLAGS = -Wall \
+                -Wextra \
+                -O2 \
+                -g \
+                -I$(ASSIMP_INCLUDE_DIR) \
+                -I$(INCLUDE_DIR) \
+                -Iexternal/glm \
+                -MMD \
+                -MP \
+                -std=c++17
+NATIVE_LINKER_FLAGS = -lglfw \
+                      -lGL \
+                      -lGLEW \
+                      -L$(NATIVE_BIN_DIR) \
+                      -lassimp \
+                      -Wl,-rpath,$(NATIVE_BIN_DIR)
 NATIVE_TARGET = $(NATIVE_BIN_DIR)/fractal
 
 # Web build configuration

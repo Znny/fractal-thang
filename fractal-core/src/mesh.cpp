@@ -1,5 +1,6 @@
 #include "mesh.h"
 #include <iostream>
+#include "assimp/material.h"
 #include "glreq.h"
 #include "textureloader.h"
 #include "assetutils.h"
@@ -109,14 +110,44 @@ void Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
     // Process materials
     std::cout << "Processing material " << mesh->mMaterialIndex << std::endl;
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        
+    std::cout << "Material name: " << material->GetName().C_Str() << std::endl;
+
+    //debug print all texture types and their paths
+    /*
+    aiTextureType firstTextureType = aiTextureType_NONE;
+    aiTextureType lastTextureType = AI_TEXTURE_TYPE_MAX;
+    for(aiTextureType type = firstTextureType; type <= lastTextureType; type = aiTextureType(type + 1)) {
+        std::cout << "Texture count for " << aiTextureTypeToString(type) << ": " << material->GetTextureCount(type) << std::endl;
+        for(int i = 0; i < material->GetTextureCount(type); i++) {
+            aiString str;
+            material->GetTexture(type, i, &str);
+            std::cout << "Texture path: " << str.C_Str() << std::endl;
+        }
+    }
+    */        
+
     // Load PBR textures from material
     LoadMaterialTextures(material, aiTextureType_DIFFUSE, "albedo", scene);
+    if(albedoTexture == 0) {
+        LoadMaterialTextures(material, aiTextureType_BASE_COLOR, "albedo", scene);
+    }
+
     LoadMaterialTextures(material, aiTextureType_NORMALS, "normal", scene);
+    if(normalTexture == 0) {
+        LoadMaterialTextures(material, aiTextureType_NORMAL_CAMERA, "normal", scene);
+    }
+
     LoadMaterialTextures(material, aiTextureType_METALNESS, "metallic", scene);
+
     LoadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "roughness", scene);
-    LoadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "ao", scene);
+    if(roughnessTexture == 0) {
+        LoadMaterialTextures(material, aiTextureType_SHININESS, "roughness", scene);
+    }
+
     LoadMaterialTextures(material, aiTextureType_LIGHTMAP, "ao", scene);
+    if(aoTexture == 0) {
+        LoadMaterialTextures(material, aiTextureType_AMBIENT_OCCLUSION, "ao", scene);
+    }
 }
 
 void Mesh::SetupMesh() {
@@ -194,14 +225,9 @@ unsigned int Mesh::LoadTexture(const std::string& path, const aiScene* scene) {
 std::vector<Texture> Mesh::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& typeName, const aiScene* scene) {
     std::vector<Texture> textures;
     
-    std::cout << "Looking for " << typeName << " textures..." << std::endl;
-    std::cout << "Texture count for " << typeName << ": " << mat->GetTextureCount(type) << std::endl;
-
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
-        
-        std::cout << "Found " << typeName << " texture: " << str.C_Str() << std::endl;
         
         // Check if texture was already loaded
         bool skip = false;
