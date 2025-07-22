@@ -17,17 +17,17 @@ $(shell mkdir -p $(NATIVE_OBJ_DIR))
 $(shell mkdir -p $(WEB_OBJ_DIR))
 $(shell mkdir -p $(NATIVE_BIN_DIR))
 
-# Source files
-ALL_SRC = $(wildcard $(SRC_DIR)/*.cpp)
+# Source files - include subdirectories but exclude tests
+ALL_SRC = $(shell find $(SRC_DIR) -name "*.cpp" -not -path "*/tests/*")
 # Filter out emscripten-specific files for native build
 NATIVE_SRC = $(filter-out $(SRC_DIR)/embinding.cpp,$(ALL_SRC))
 WEB_SRC = $(ALL_SRC)
 
-# Object files
+# Object files - handle subdirectories
 NATIVE_OBJ = $(patsubst $(SRC_DIR)/%.cpp,$(NATIVE_OBJ_DIR)/%.o,$(NATIVE_SRC))
 WEB_OBJ = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.o,$(WEB_SRC))
 
-# Dependency files
+# Dependency files - handle subdirectories
 NATIVE_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(NATIVE_OBJ_DIR)/%.d,$(NATIVE_SRC))
 WEB_DEPS = $(patsubst $(SRC_DIR)/%.cpp,$(WEB_OBJ_DIR)/%.d,$(WEB_SRC))
 
@@ -104,14 +104,16 @@ $(WEB_TARGET): $(WEB_OBJ)
 	@echo "Linking WebAssembly module..."
 	$(WEB_CXX) $(WEB_LINKER_FLAGS) -o $(WEB_TARGET) $^ $(WEB_TSDFLAGS)
 
-# Compile source files to object files for native target
+# Compile source files to object files for native target (handle subdirectories)
 $(NATIVE_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Compiling $< to $@ for native..."
+	@mkdir -p $(dir $@)
 	$(NATIVE_CXX) $(NATIVE_CXXFLAGS) -c $< -o $@
 
-# Compile source files to object files for web target
+# Compile source files to object files for web target (handle subdirectories)
 $(WEB_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Compiling $< to $@ for web..."
+	@mkdir -p $(dir $@)
 	$(WEB_CXX) $(WEB_CXXFLAGS) -c $< -o $@
 
 # Clean up build artifacts

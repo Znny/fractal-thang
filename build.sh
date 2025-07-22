@@ -4,7 +4,12 @@ set -e  # Exit on error
 # Default target
 TARGET="web"
 CLEAN=false
-EMSSH="$PWD/fractal-web/ems.sh"
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+EMSSH="$SCRIPT_DIR/fractal-web/ems.sh"
+echo "EMSSH path: $EMSSH"
+echo "Current directory: $(pwd)"
+echo "Script directory: $SCRIPT_DIR"
 
 # Parse command line arguments
 while [ "$1" != "" ]; do
@@ -27,7 +32,6 @@ if [ "$TARGET" != "web" ] && [ "$TARGET" != "native" ]; then
 fi
 
 # Ensure we're in the correct directory
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
 echo "Checking dependencies..."

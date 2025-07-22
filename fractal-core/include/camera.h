@@ -21,8 +21,11 @@ public:
 
     // First-person movement
     void moveForward(float distance);
+    inline void moveBackward(float distance) { moveForward(-distance); }
     void moveRight(float distance);
+    inline void moveLeft(float distance) { moveRight(-distance); }
     void moveUp(float distance);
+    inline void moveDown(float distance) { moveUp(-distance); }
     void moveLocal(const glm::vec3& direction, float distance);
 
     // First-person rotation

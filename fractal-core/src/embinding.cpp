@@ -14,6 +14,7 @@
 #include "mesh.h"
 #include "light.h"
 #include "meshrenderer.h"
+#include "Engine.h"
 
 EMSCRIPTEN_BINDINGS(my_module) {
 
@@ -50,8 +51,11 @@ EMSCRIPTEN_BINDINGS(my_module) {
         .function("getScale", &Camera::getScale)
         // First-person movement
         .function("moveForward", &Camera::moveForward)
+        .function("moveBackward", &Camera::moveBackward)
         .function("moveRight", &Camera::moveRight)
+        .function("moveLeft", &Camera::moveLeft)
         .function("moveUp", &Camera::moveUp)
+        .function("moveDown", &Camera::moveDown)
         .function("moveLocal", &Camera::moveLocal)
         // First-person rotation
         .function("rotateYaw", &Camera::rotateYaw)
@@ -88,7 +92,6 @@ EMSCRIPTEN_BINDINGS(my_module) {
         .function("destroy", &Window::Destroy)
         .function("resize", &Window::Resize)
         .function("swapBuffers", &Window::SwapBuffers)
-        .function("pollEvents", &Window::PollEvents)
         .function("getWidth", &Window::GetWidth)
         .function("getHeight", &Window::GetHeight);
 
@@ -121,8 +124,7 @@ EMSCRIPTEN_BINDINGS(my_module) {
     // Mesh class
     emscripten::class_<Mesh>("Mesh")
         .constructor<const std::string&>()
-        .function("draw", &Mesh::Draw)
-        .function("loadPBRTextures", &Mesh::LoadPBRTextures);
+        .function("draw", &Mesh::Draw);
 
     emscripten::class_<MeshInstance>("MeshInstance")
         .constructor<>();
@@ -145,6 +147,50 @@ EMSCRIPTEN_BINDINGS(my_module) {
     emscripten::function("glEnable", &glEnable);
     emscripten::function("glDisable", &glDisable);
     emscripten::constant("GL_DEPTH_TEST", GL_DEPTH_TEST);
+
+    emscripten::class_<InputDevice>("InputDevice")
+        .constructor<int>()
+        .function("isButtonDown", &InputDevice::IsButtonDown)
+        .function("isButtonUp", &InputDevice::IsButtonUp)
+        .function("isButtonPressed", &InputDevice::IsButtonPressed)
+        .function("isButtonReleased", &InputDevice::IsButtonReleased)
+        .function("isButtonHeld", &InputDevice::IsButtonHeld);
+    
+    emscripten::class_<Keyboard>("Keyboard")
+        .constructor<int>()
+        .function("isKeyDown", &Keyboard::IsKeyDown)
+        .function("isKeyUp", &Keyboard::IsKeyUp)
+        .function("isKeyPressed", &Keyboard::IsKeyPressed)
+        .function("isKeyReleased", &Keyboard::IsKeyReleased)
+        .function("isKeyHeld", &Keyboard::IsKeyHeld);
+    
+    emscripten::class_<Mouse>("Mouse")
+        .constructor<int>()
+        .function("isButtonDown", &Mouse::IsButtonDown)
+        .function("isButtonUp", &Mouse::IsButtonUp)
+        .function("isButtonPressed", &Mouse::IsButtonPressed)
+        .function("isButtonReleased", &Mouse::IsButtonReleased)
+        .function("isButtonHeld", &Mouse::IsButtonHeld)
+        .function("getX", &Mouse::GetX)
+        .function("getY", &Mouse::GetY)
+        .function("getDeltaX", &Mouse::GetDeltaX)
+        .function("getDeltaY", &Mouse::GetDeltaY);
+    
+    // Engine class
+    emscripten::class_<Engine>("Engine")
+        .constructor<>()
+        .function("initialize", emscripten::select_overload<bool(const std::string&)>(&Engine::Initialize))
+        .function("processEvents", &Engine::ProcessEvents)
+        .function("handleKeyboardInput", &Engine::HandleKeyboardInput)
+        .function("handleMouseMoveEvent", &Engine::HandleMouseMoveEvent)
+        .function("handleMouseButtonEvent", &Engine::HandleMouseButtonEvent)
+        .function("update", &Engine::Update)
+        .function("render", &Engine::Render)
+        .function("loadModel", &Engine::LoadModel)
+        .function("handleFileDrop", &Engine::HandleFileDrop)
+        .function("getKeyboard", &Engine::GetKeyboard, emscripten::allow_raw_pointers())
+        .function("getMouse", &Engine::GetMouse, emscripten::allow_raw_pointers())
+        .function("getCamera", &Engine::GetCamera, emscripten::allow_raw_pointers());
 
 }
 

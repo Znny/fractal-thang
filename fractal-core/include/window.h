@@ -18,7 +18,6 @@ class Window
 
         void Resize(int newWidth, int newHeight);
         void SwapBuffers();
-        void PollEvents();
         
         bool ShouldClose() const;
         void* GetNativeHandle() const;
@@ -26,15 +25,15 @@ class Window
         int GetWidth() const { return width; }
         int GetHeight() const { return height; }
         bool IsInitialized() const { return bIsInitialized; }
+        void Close() { 
+            #ifndef __EMSCRIPTEN__
+            glfwSetWindowShouldClose(window, GLFW_TRUE); 
+            #endif
+        }
 
         #ifndef __EMSCRIPTEN__
         GLFWwindow* GetWindow() const { return window; }
         #endif
-        
-        // Input methods
-        bool IsKeyPressed(int key) const;
-        bool IsMouseButtonPressed(int button) const;
-        void GetCursorPos(double* xpos, double* ypos) const;
         
         void Destroy();
 
@@ -49,6 +48,7 @@ class Window
         #endif
         
         bool bIsInitialized = false;
+        
     };
 
 #endif 
